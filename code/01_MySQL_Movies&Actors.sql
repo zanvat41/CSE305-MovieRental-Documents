@@ -19,7 +19,8 @@ CREATE TABLE Movie (
 	Rating INT,
 	PRIMARY KEY (ID),
 	CONSTRAINT chk_Rating CHECK (Rating IN (1, 2, 3, 4, 5)), #Domain
-	CONSTRAINT chk_Copies CHECK (Copies >= 0)
+	CONSTRAINT chk_Copies CHECK (Copies >= 0),
+	CONSTRAINT chk_Fee CHECK (Fee >= 0.0)
 );
 
 CREATE TABLE Actor (
