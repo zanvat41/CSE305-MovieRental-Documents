@@ -3,7 +3,7 @@
 #Weichao Zhao 
 #
 #CSE305 Database Project Part 1
-#Account & Order Schema
+#Employee, Customer Account & Order Schema
 
 
 ##########################
@@ -84,14 +84,29 @@ CREATE TABLE Order (
 	FOREIGN KEY (EmployeeID) REFERENCES Employee(ID)
 		ON DELETE SET NULL
 		ON UPDATE CASCADE
+	# @TODO: Make sure customer can't rent 2 of the same movie at the same time
 );
 
 
-
+# Represents movies that users have added to their Movie Queue (aka Wishlist)
+CREATE TABLE Queued (
+	CustomerID INT,
+	MovieID INT,
+	DateAdded DATETIME,	# Can be used to sort movies in the queue
+	PRIMARY KEY (CustomerID, MovieID),
+	FOREIGN KEY (CustomerID) REFERENCES Customer(AccountID)
+		ON DELETE CASCADE
+		ON UPDATE CASCADE,
+	FOREIGN KEY (MovieID) REFERENCES Movie(ID)
+		ON DELETE CASCADE
+		ON UPDATE CASCADE
+	# @TODO: If customer rents this movie, delete it from their queue
+);
 
 
 
 #######################
 #########Views#########
 #######################
+
 
