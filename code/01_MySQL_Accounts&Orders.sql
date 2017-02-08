@@ -32,10 +32,10 @@ CREATE TABLE Person (
 );
 
 CREATE TABLE Customer (
-	AccountID INT,
+	AccountID INT, # References Person(ID)
 	Email VARCHAR(64) NOT NULL,
 	AccountType ENUM('Limited', 'Unlimited', 'Unlimited+', 'Unlimited++') NOT NULL DEFAULT 'Limited', # ENUM Domain
-	AccountCreated DATE,
+	AccountCreated DATE, # DATEs are formatted like so: '1000-01-01'
 	CreditCard CHAR(16) NOT NULL,
 	Rating INT DEFAULT 1,
 	PRIMARY KEY (AccountID),
@@ -48,12 +48,43 @@ CREATE TABLE Customer (
 	CONSTRAINT chk_CC CHECK (CreditCard RLIKE '^[0-9]{16}$') # Check that CC# is composed of only numbers
 );
 
+CREATE TABLE Employee (
+	ID INT, # References Person(ID)
+	SSN CHAR(9),
+	StartDate DATE,	# Start of employment
+	HourlyRate FLOAT NOT NULL DEFAULT 20.00,
+	PRIMARY KEY (ID),
+	FOREIGN KEY (ID) REFERENCES Person(ID)
+		ON DELETE CASCADE
+		ON UPDATE CASCADE,
+	CONSTRAINT chk_Pay CHECK (HourlyRate >= 9.00), # Make sure employees don't get paid below minimum wage @TODO: make min wage a constant?
+	CONSTRAINT chk_SSN CHECK (SSN RLIKE '^[0-9]{9}$') # Check that SSN is composed of only numbers
+);
+
 
 #######################
 ##Relationship Tables##
 #######################
 
-
+# Represents movies that have been rented by customers
+CREATE TABLE Order (
+	OrderID INT,
+	CustomerID INT NOT NULL,
+	MovieID INT,
+	EmployeeID INT,
+	OrderDate DATETIME, # DATETIMEs are formatted like so: '1000-01-01 00:00:00'
+	LoanStatus ENUM('Expired', 'Ongoing') NOT NULL DEFAULT 'Ongoing', # If a rental is 'Ongoing', the customer still has the movie out
+	PRIMARY KEY (OrderID),
+	FOREIGN KEY (CustomerID) REFERENCES Customer(AccountID)
+		ON DELETE CASCADE	# If customer account is deleted, delete this record
+		ON UPDATE CASCADE,
+	FOREIGN KEY (MovieID) REFERENCES Movie(ID)
+		ON DELETE SET NULL
+		ON UPDATE CASCADE,
+	FOREIGN KEY (EmployeeID) REFERENCES Employee(ID)
+		ON DELETE SET NULL
+		ON UPDATE CASCADE
+);
 
 
 
