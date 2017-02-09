@@ -112,7 +112,6 @@ CREATE TABLE Queued (
 CREATE VIEW MovieQueue (CustomerID, MovieID, DateAdded) AS (
 	SELECT CustomerID, MovieID, DateAdded
 	FROM Queued JOIN Customer ON (CustomerID = AccountID)
-	WHERE CustomerID = AccountID
 	ORDER BY DATETIME ASC
 );
 

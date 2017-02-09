@@ -68,12 +68,10 @@ CREATE TABLE Casted (
 CREATE VIEW CastList (MovieID, ActorID, FirstName, LastName, Gender, Age, ActorRating) AS (
 	SELECT MovieID, ActorID, FirstName, LastName, Gender, Age, Actor.Rating
 	FROM (Actor JOIN Casted ON (Actor.ID = ActorID)) JOIN Movie ON (MovieID = Movie.ID)
-	WHERE MovieID = Movie.ID
 );
 
 #A list of all movies each actor has been in
 CREATE VIEW Roles (ActorID, MovieID, Title, Genre, MovieRating) AS (
 	SELECT ActorID, MovieID, Title, Genre, Movie.Rating
 	FROM (Actor JOIN Casted ON (Actor.ID = ActorID)) JOIN Movie ON (MovieID = Movie.ID)
-	WHERE ActorID = Actor.ID
 );
