@@ -73,7 +73,7 @@ CREATE TABLE Rented (
 	MovieID INT,
 	EmployeeID INT,
 	OrderDate DATETIME, # DATETIMEs are formatted like so: '1000-01-01 00:00:00'
-	LoanStatus ENUM('Expired', 'Ongoing') NOT NULL DEFAULT 'Ongoing', # If a rental is 'Ongoing', the customer still has the movie out
+	LoanStatus ENUM('Expired', 'Active') NOT NULL DEFAULT 'Active', # If a rental is 'Ongoing', the customer still has the movie out
 	PRIMARY KEY (OrderID),
 	FOREIGN KEY (CustomerID) REFERENCES Customer(AccountID)
 		ON DELETE CASCADE	# If customer account is deleted, delete this record
