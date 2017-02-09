@@ -67,7 +67,7 @@ CREATE TABLE Employee (
 #######################
 
 # Represents movies that have been rented by customers
-CREATE TABLE Order (
+CREATE TABLE Rented (
 	OrderID INT,
 	CustomerID INT NOT NULL,
 	MovieID INT,
