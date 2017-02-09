@@ -31,7 +31,7 @@ CREATE TABLE Person (
 	# @todo: check that zip/phone are all digits?
 );
 
-CREATE TABLE Customer (
+CREATE TABLE Customer ( # IsA Person
 	AccountID INT, # References Person(ID)
 	Email VARCHAR(64) NOT NULL,
 	AccountType ENUM('Limited', 'Unlimited', 'Unlimited+', 'Unlimited++') NOT NULL DEFAULT 'Limited', # ENUM Domain
@@ -48,7 +48,7 @@ CREATE TABLE Customer (
 	CONSTRAINT chk_CC CHECK (CreditCard RLIKE '^[0-9]{16}$') # Check that CC# is composed of only numbers
 );
 
-CREATE TABLE Employee (
+CREATE TABLE Employee ( # IsA Person
 	ID INT, # References Person(ID)
 	SSN CHAR(9),
 	StartDate DATE,	# Start of employment
@@ -112,8 +112,21 @@ CREATE TABLE Queued (
 CREATE VIEW MovieQueue (CustomerID, MovieID, DateAdded) AS (
 	SELECT CustomerID, MovieID, DateAdded
 	FROM Queued JOIN Customer ON (CustomerID = AccountID)
-	ORDER BY DATETIME ASC
+	ORDER BY DateAdded ASC
 );
 
-# @TODO: Views to add: Rental history, current checkouts, others??
+CREATE VIEW RentalHistory (CustomerID, MovieID, Title, Genre, Rating, OrderDate, LoanStatus) AS (
+	SELECT CustomerID, MovieID, Title, Genre, Movie.Rating, OrderDate, LoanStatus
+	FROM Rented JOIN Movie ON (MovieID = ID)
+	ORDER BY OrderDate DESC
+);
+
+# List of movies that customers currently have loaned:
+CREATE VIEW CurrentLoans (CustomerID, MovieID, Title, OrderDate) AS (
+	SELECT CustomerID, MovieID, Title, OrderDate
+	FROM Rented JOIN Movie ON (MovieID = ID)
+	WHERE LoanStatus = 'Ongoing'
+);
+
+# @TODO: add more views?
 
