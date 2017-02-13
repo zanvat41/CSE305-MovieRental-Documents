@@ -8,7 +8,7 @@
 
 
 ############################
-##########Triggers##########
+#########Procedures#########
 ############################
 
 
@@ -28,25 +28,6 @@ BEGIN
 END;
 $$
 DELIMITER ;
-#
-# INSERT Trigger:
-DELIMITER $$
-CREATE TRIGGER EmployeeExistsBeforeOrder_I BEFORE INSERT ON Rented
-FOR EACH ROW BEGIN
-	CALL EmployeeExistsBeforeOrder(NEW.EmployeeID, NEW.OrderDate);
-END;
-$$
-DELIMITER ;
-#
-# UPDATE Trigger:
-DELIMITER $$
-CREATE TRIGGER EmployeeExistsBeforeOrder_U BEFORE UPDATE ON Rented
-FOR EACH ROW BEGIN
-	CALL EmployeeExistsBeforeOrder(NEW.EmployeeID, NEW.OrderDate);
-END;
-$$
-DELIMITER ;
-
 
 
 # Checks that a customer's account was created before they placed an order:
@@ -65,25 +46,6 @@ BEGIN
 END;
 $$
 DELIMITER ;
-#
-# INSERT Trigger:
-DELIMITER $$
-CREATE TRIGGER CustomerExistsBeforeOrder_I BEFORE INSERT ON Rented
-FOR EACH ROW BEGIN
-	CALL CustomerExistsBeforeOrder (NEW.CustomerID, NEW.OrderDate);
-END;
-$$
-DELIMITER ;
-#
-# UPDATE Trigger:
-DELIMITER $$
-CREATE TRIGGER CustomerExistsBeforeOrder_U BEFORE UPDATE ON Rented
-FOR EACH ROW BEGIN
-	CALL CustomerExistsBeforeOrder (NEW.CustomerID, NEW.OrderDate);
-END;
-$$
-DELIMITER ;
-
 
 
 # Checks that a customer's account was created before they put a movie in their queue:
@@ -102,25 +64,6 @@ BEGIN
 END;
 $$
 DELIMITER ;
-#
-# INSERT Trigger:
-DELIMITER $$
-CREATE TRIGGER CustomerExistsBeforeQueue_I BEFORE INSERT ON Queued
-FOR EACH ROW BEGIN
-	CALL CustomerExistsBeforeQueue(NEW.CustomerID, NEW.DateAdded);
-END;
-$$
-DELIMITER ;
-#
-# UPDATE Trigger:
-DELIMITER $$
-CREATE TRIGGER CustomerExistsBeforeQueue_U BEFORE UPDATE ON Queued
-FOR EACH ROW BEGIN
-	CALL CustomerExistsBeforeQueue(NEW.CustomerID, NEW.DateAdded);
-END;
-$$
-DELIMITER ;
-
 
 
 # Checks that customer isn't renting 2 copies of the same movie at the same time:
@@ -144,25 +87,52 @@ BEGIN
 END;
 $$
 DELIMITER ;
-#
-# INSERT Trigger:
+
+
+
+
+############################
+##########Triggers##########
+############################
+
+# Pre-INSERT trigger for Rented:
 DELIMITER $$
-CREATE TRIGGER CantHaveTwoCopies_I BEFORE INSERT ON Rented
+CREATE TRIGGER Rented_PreInsert_Checks BEFORE INSERT ON Rented
 FOR EACH ROW BEGIN
 	CALL CantHaveTwoCopies(NEW.LoanStatus, NEW.CustomerID, NEW.MovieID);
+	CALL CustomerExistsBeforeOrder (NEW.CustomerID, NEW.OrderDate);
+	CALL EmployeeExistsBeforeOrder(NEW.EmployeeID, NEW.OrderDate);
 END;
 $$
 DELIMITER ;
-#
-# UPDATE Trigger:
+# Pre-UPDATE trigger for Rented:
 DELIMITER $$
-CREATE TRIGGER CantHaveTwoCopies_U BEFORE UPDATE ON Rented
+CREATE TRIGGER Rented_PreUpdate_Checks BEFORE UPDATE ON Rented
 FOR EACH ROW BEGIN
 	CALL CantHaveTwoCopies(NEW.LoanStatus, NEW.CustomerID, NEW.MovieID);
+	CALL CustomerExistsBeforeOrder (NEW.CustomerID, NEW.OrderDate);
+	CALL EmployeeExistsBeforeOrder(NEW.EmployeeID, NEW.OrderDate);
 END;
 $$
 DELIMITER ;
 
+
+# Pre-INSERT trigger for Queued:
+DELIMITER $$
+CREATE TRIGGER Queued_PreInsert_Checks BEFORE INSERT ON Queued
+FOR EACH ROW BEGIN
+	CALL CustomerExistsBeforeQueue(NEW.CustomerID, NEW.DateAdded);
+END;
+$$
+DELIMITER ;
+# Pre-UPDATE trigger for Queued:
+DELIMITER $$
+CREATE TRIGGER Queued_PreUpdate_Checks BEFORE UPDATE ON Queued
+FOR EACH ROW BEGIN
+	CALL CustomerExistsBeforeQueue(NEW.CustomerID, NEW.DateAdded);
+END;
+$$
+DELIMITER ;
 
 
 
