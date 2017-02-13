@@ -15,11 +15,11 @@
 # Checks that an employee began working before they helped with an order:
 # Procedure:
 DELIMITER $$
-CREATE PROCEDURE EmployeeExistsBeforeOrder (IN EmployeeID INT, OrderDate DATETIME)
+CREATE PROCEDURE EmployeeExistsBeforeOrder (IN New_EmployeeID INT, New_OrderDate DATETIME)
 BEGIN
-	IF DATE(OrderDate) < (SELECT StartDate
+	IF DATE(New_OrderDate) < (SELECT StartDate
 			FROM Employee
-			WHERE EmployeeID = Employee.ID
+			WHERE New_EmployeeID = Employee.ID
 		)
 	THEN 
 		SIGNAL SQLSTATE 'E0451'
@@ -33,11 +33,11 @@ DELIMITER ;
 # Checks that a customer's account was created before they placed an order:
 # Procedure:
 DELIMITER $$
-CREATE PROCEDURE CustomerExistsBeforeOrder (IN CustomerID INT, OrderDate DATETIME)
+CREATE PROCEDURE CustomerExistsBeforeOrder (IN New_CustomerID INT, New_OrderDate DATETIME)
 BEGIN
-	IF DATE(OrderDate) < (SELECT AccountCreated
+	IF DATE(New_OrderDate) < (SELECT AccountCreated
 			FROM Customer
-			WHERE CustomerID = AccountID
+			WHERE New_CustomerID = AccountID
 		)
 	THEN 
 		SIGNAL SQLSTATE 'E0451'
@@ -51,11 +51,11 @@ DELIMITER ;
 # Checks that a customer's account was created before they put a movie in their queue:
 # Procedure:
 DELIMITER $$
-CREATE PROCEDURE CustomerExistsBeforeQueue (IN CustomerID INT, DateAdded DATETIME)
+CREATE PROCEDURE CustomerExistsBeforeQueue (IN New_CustomerID INT, New_DateAdded DATETIME)
 BEGIN
-	IF DATE(DateAdded) < (SELECT AccountCreated
+	IF DATE(New_DateAdded) < (SELECT AccountCreated
 			FROM Customer
-			WHERE CustomerID = AccountID
+			WHERE New_CustomerID = AccountID
 		)
 	THEN 
 		SIGNAL SQLSTATE 'E0451'
@@ -70,14 +70,14 @@ DELIMITER ;
 # Procedure:
 DELIMITER $$
 CREATE PROCEDURE CantHaveTwoCopies (
-	IN LoanStatus ENUM('Expired', 'Active'), CustomerID INT, MovieID INT)
+	IN New_LoanStatus ENUM('Expired', 'Active'), New_CustomerID INT, New_MovieID INT)
 BEGIN
 	IF 1 <= (SELECT COUNT(*)
 			FROM Rented R1
 			WHERE
-				LoanStatus = 'Active' AND
-				CustomerID = R1.CustomerID AND
-				MovieID = R1.MovieID AND
+				New_LoanStatus = 'Active' AND
+				New_CustomerID = R1.CustomerID AND
+				New_MovieID = R1.MovieID AND
 				R1.LoanStatus = 'Active'
 		)
 	THEN 
