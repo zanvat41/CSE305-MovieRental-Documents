@@ -145,7 +145,7 @@ VALUES (4, '823825724', '2006-11-11', 21.23);
 INSERT INTO Employee (ID, SSN, StartDate, HourlyRate)
 VALUES (5, '134163028', '1987-09-27', 26.64);
 INSERT INTO Employee (ID, SSN, StartDate, HourlyRate)
-VALUES (6, '134163028', '2010-04-16', 17.76);
+VALUES (6, '563463093', '2010-04-16', 17.76);
 
 
 INSERT INTO Rented (OrderID, CustomerID, MovieID, EmployeeID, OrderDate, LoanStatus)
