@@ -137,15 +137,15 @@ VALUES (3, 'blooded@blackwallst.com', 'Unlimited+', '2005-07-02', '8293728304927
 INSERT INTO Customer (AccountID, Email, AccountType, AccountCreated, CreditCard, Rating)
 VALUES (7, 'wildwest@mib.org', 'Unlimited', '1999-09-25', '3823740572384561', 3);
 INSERT INTO Customer (AccountID, Email, AccountType, AccountCreated, CreditCard, Rating)
-VALUES (2, 'psc@grandhustle.net', 'Unlimited++', '1980-09-25', '2647526019092345', 5);
+VALUES (2, 'psc@grandhustle.net', 'Unlimited++', '1998-09-25', '2647526019092345', 5);
 
 
 INSERT INTO Employee (ID, SSN, StartDate, HourlyRate)
-VALUES (4, '823825724', '2006-11-11', 21.23);
+VALUES (4, '823825724', '1994-11-11', 21.23);
 INSERT INTO Employee (ID, SSN, StartDate, HourlyRate)
 VALUES (5, '134163028', '1987-09-27', 26.64);
 INSERT INTO Employee (ID, SSN, StartDate, HourlyRate)
-VALUES (6, '563463093', '2010-04-16', 17.76);
+VALUES (6, '563463093', '1992-04-16', 17.76);
 
 
 INSERT INTO Rented (OrderID, CustomerID, MovieID, EmployeeID, OrderDate, LoanStatus)
@@ -165,7 +165,7 @@ VALUES (7, 3, 7, 4, '2014-01-05 17:57:32', 'Expired');
 INSERT INTO Rented (OrderID, CustomerID, MovieID, EmployeeID, OrderDate, LoanStatus)
 VALUES (8, 3, 1, 5, '2015-12-30 20:46:11', 'Expired');
 INSERT INTO Rented (OrderID, CustomerID, MovieID, EmployeeID, OrderDate, LoanStatus)
-VALUES (9, 7, 8, 6, '2002-05-12 01:59:13', 'Expired');
+VALUES (9, 7, 8, 6, '2008-05-12 01:59:13', 'Expired');
 INSERT INTO Rented (OrderID, CustomerID, MovieID, EmployeeID, OrderDate, LoanStatus)
 VALUES (10, 7, 5, 5, '2017-02-07 05:45:23', 'Active');
 
