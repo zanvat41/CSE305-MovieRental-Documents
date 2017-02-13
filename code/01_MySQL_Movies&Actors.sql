@@ -18,7 +18,7 @@ CREATE TABLE Movie (
 	Copies INT DEFAULT 0,
 	Rating INT,
 	PRIMARY KEY (ID),
-	CONSTRAINT chk_Rating CHECK (Rating IN (1, 2, 3, 4, 5)), #Domain
+	CONSTRAINT chk_Rating CHECK (Rating IN (1, 2, 3, 4, 5)), # This Constraint also acts as a domain
 	CONSTRAINT chk_Copies CHECK (Copies >= 0),
 	CONSTRAINT chk_Fee CHECK (Fee >= 0.0)
 );
@@ -27,12 +27,11 @@ CREATE TABLE Actor (
 	ID INT,
 	FirstName VARCHAR(64) NOT NULL,
 	LastName VARCHAR(64) NOT NULL,
-	Gender CHAR(1),
+	Gender ENUM('M','F'), # This ENUM also acts as a domain
 	Age INT,
 	Rating INT,
 	PRIMARY KEY (ID),
 	CONSTRAINT chk_Rating CHECK (Rating IN (1, 2, 3, 4, 5)),
-	CONSTRAINT chk_Gender CHECK (Gender IN ('M', 'F')),
 	CONSTRAINT chk_Age CHECK (Age >= 0)
 );
 
