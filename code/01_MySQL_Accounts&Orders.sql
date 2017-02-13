@@ -16,6 +16,7 @@ CREATE TABLE Person (
 	FirstName VARCHAR(64),
 	Address VARCHAR(64),
 	City VARCHAR(64),
+	# ENUMs also act as domains:
 	State ENUM('AK','AL','AR','AZ','CA','CO','CT', # ENUM Domain (for valid state/territory/base abbreviations)
 		'DE','FL','GA','HI','IA','ID','IL','IN','KS',
 		'KY','LA','MA','MD','ME','MI','MN','MO','MS',
@@ -57,6 +58,7 @@ CREATE TABLE Employee ( # IsA Person
 	FOREIGN KEY (ID) REFERENCES Person(ID)
 		ON DELETE CASCADE
 		ON UPDATE CASCADE,
+	UNIQUE KEY (SSN),
 	CONSTRAINT chk_Pay CHECK (HourlyRate >= 9.00), # Make sure employees don't get paid below minimum wage @TODO: make min wage a constant?
 	CONSTRAINT chk_SSN CHECK (SSN RLIKE '^[0-9]{9}$') # Check that SSN is composed of only numbers
 );
@@ -92,7 +94,7 @@ CREATE TABLE Rented (
 CREATE TABLE Queued (
 	CustomerID INT,
 	MovieID INT,
-	DateAdded DATETIME,	# Can be used to sort movies in the queue
+	DateAdded DATETIME,	# Used to sort movies in the queue
 	PRIMARY KEY (CustomerID, MovieID),
 	FOREIGN KEY (CustomerID) REFERENCES Customer(AccountID)
 		ON DELETE CASCADE
@@ -125,7 +127,7 @@ CREATE VIEW RentalHistory (CustomerID, MovieID, Title, Genre, Rating, OrderDate,
 CREATE VIEW CurrentLoans (CustomerID, MovieID, Title, OrderDate) AS (
 	SELECT CustomerID, MovieID, Title, OrderDate
 	FROM Rented JOIN Movie ON (MovieID = ID)
-	WHERE LoanStatus = 'Ongoing'
+	WHERE LoanStatus = 'Active'
 );
 
 # @TODO: add more views?
