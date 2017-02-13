@@ -6,6 +6,9 @@
 #Employee, Customer Account & Order Schema
 
 
+# @TODO: Keep in mind that MySQL parses constraints, but does not enforce them. Implement replacement triggers later.
+
+
 ##########################
 ######Entity Tables#######
 ##########################
@@ -43,7 +46,7 @@ CREATE TABLE Customer ( # IsA Person
 	FOREIGN KEY (AccountID) REFERENCES Person(ID)
 		ON DELETE CASCADE
 		ON UPDATE CASCADE,
-	UNIQUE KEY (Email),
+	UNIQUE KEY (Email), # Don't allow multiple accounts tied to the same email address
 	CONSTRAINT chk_Rating CHECK (Rating IN (1, 2, 3, 4, 5)),
 	CONSTRAINT chk_Email CHECK (Email LIKE '%_@_%._%'), # The '%' char checks for 0 or more chars; '_' checks for exactly 1 character
 	CONSTRAINT chk_CC CHECK (CreditCard RLIKE '^[0-9]{16}$') # Check that CC# is composed of only numbers
@@ -58,7 +61,7 @@ CREATE TABLE Employee ( # IsA Person
 	FOREIGN KEY (ID) REFERENCES Person(ID)
 		ON DELETE CASCADE
 		ON UPDATE CASCADE,
-	UNIQUE KEY (SSN),
+	UNIQUE KEY (SSN), # No two people have the same SSN
 	CONSTRAINT chk_Pay CHECK (HourlyRate >= 9.00), # Make sure employees don't get paid below minimum wage @TODO: make min wage a constant?
 	CONSTRAINT chk_SSN CHECK (SSN RLIKE '^[0-9]{9}$') # Check that SSN is composed of only numbers
 );
@@ -78,15 +81,15 @@ CREATE TABLE Rented (
 	LoanStatus ENUM('Expired', 'Active') NOT NULL DEFAULT 'Active', # If a rental is 'Active', the customer still has the movie out
 	PRIMARY KEY (OrderID),
 	FOREIGN KEY (CustomerID) REFERENCES Customer(AccountID)
-		ON DELETE CASCADE	# If customer account is deleted, delete this record
+		ON DELETE CASCADE	# If customer account is deleted, delete this order record
 		ON UPDATE CASCADE,
 	FOREIGN KEY (MovieID) REFERENCES Movie(ID)
 		ON DELETE SET NULL
 		ON UPDATE CASCADE,
 	FOREIGN KEY (EmployeeID) REFERENCES Employee(ID)
 		ON DELETE SET NULL
-		ON UPDATE CASCADE
-	# @TODO: Make sure customer can't rent 2 of the same movie at the same time
+		ON UPDATE CASCADE,
+	UNIQUE KEY (CustomerID, MovieID, OrderDate) # Can't rent multiple copies of the same movie at the same time
 );
 
 
@@ -131,4 +134,62 @@ CREATE VIEW CurrentLoans (CustomerID, MovieID, Title, OrderDate) AS (
 );
 
 # @TODO: add more views?
+
+
+
+############################
+#########Assertions#########
+############################
+# @TODO: MySQL doesn't support assertions. Replace these with triggers in the real implementation
+
+# Asserts that an employee began working before they helped with any orders:
+CREATE ASSERTION EmployeeExistsForOrder CHECK (
+	NOT EXISTS (
+		SELECT OrderDate, StartDate
+		FROM Rented JOIN Employee ON (EmployeeID = Employee.ID)
+		WHERE DATE(OrderDate) < StartDate
+	)
+);
+
+# Asserts that a customer's account was created before they placed any orders:
+CREATE ASSERTION CustomerExistsForOrder CHECK (
+	NOT EXISTS (
+		SELECT OrderDate, AccountCreated
+		FROM Rented JOIN Customer ON (CustomerID = AccountID)
+		WHERE DATE(OrderDate) < AccountCreated
+	)
+);
+
+# Asserts that a customer's account was created before they put any movies in their queue:
+CREATE ASSERTION CustomerExistsForQueue CHECK (
+	NOT EXISTS (
+		SELECT DateAdded, AccountCreated
+		FROM Queued JOIN Customer ON (CustomerID = AccountID)
+		WHERE DATE(DateAdded) < AccountCreated
+	)
+);
+
+# Asserts that customer isn't renting 2 of the same movie at the same time:
+CREATE ASSERTION CustomersCantRentMultipleCopiesOfSameMovie CHECK (
+	NOT EXISTS (
+		SELECT CustomerID, MovieID, OrderID
+		FROM Rented R1
+		WHERE EXISTS (
+			SELECT CustomerID, MovieID, OrderID
+			FROM Rented R2
+			WHERE
+				R2.LoanStatus = 'Active' AND
+				R2.CustomerID = R1.CustomerID AND
+				R2.MovieID = R1.MovieID AND
+				NOT(R2.OrderID = R1.OrderID)
+		)
+	)
+);
+
+
+
+##########################
+#########Triggers#########
+##########################
+
 
