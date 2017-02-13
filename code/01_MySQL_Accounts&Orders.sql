@@ -140,7 +140,7 @@ CREATE VIEW CurrentLoans (CustomerID, MovieID, Title, OrderDate) AS (
 ############################
 #########Assertions#########
 ############################
-# @TODO: MySQL doesn't support assertions. Replace these with triggers in the real implementation
+# NOTE: MySQL doesn't support assertions. Replace these with triggers in the real implementation
 
 # Asserts that an employee began working before they helped with any orders:
 CREATE ASSERTION EmployeeExistsForOrder CHECK (
@@ -181,15 +181,7 @@ CREATE ASSERTION CustomersCantRentMultipleCopiesOfSameMovie CHECK (
 				R2.LoanStatus = 'Active' AND
 				R2.CustomerID = R1.CustomerID AND
 				R2.MovieID = R1.MovieID AND
-				NOT(R2.OrderID = R1.OrderID)
+				NOT (R2.OrderID = R1.OrderID)
 		)
 	)
 );
-
-
-
-##########################
-#########Triggers#########
-##########################
-
-
