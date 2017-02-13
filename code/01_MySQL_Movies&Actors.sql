@@ -15,11 +15,14 @@ CREATE TABLE Movie (
 	Title VARCHAR(64) NOT NULL,
 	Genre ENUM ('Comedy', 'Drama', 'Action', 'Foreign'),
 	Fee FLOAT DEFAULT 0.00,
-	Copies INT DEFAULT 0,
+	TotalCopies INT DEFAULT 0,
+	AvailableCopies INT DEFAULT 0,
 	Rating INT,
 	PRIMARY KEY (ID),
 	CONSTRAINT chk_Rating CHECK (Rating IN (1, 2, 3, 4, 5)), # This Constraint also acts as a domain
-	CONSTRAINT chk_Copies CHECK (Copies >= 0),
+	CONSTRAINT chk_TotalCopies CHECK (TotalCopies >= 0),
+	CONSTRAINT chk_AvailableCopies CHECK (AvailableCopies >= 0),
+	CONSTRAINT chk_AvailableVsTotalCopies CHECK (AvailableCopies <= TotalCopies),
 	CONSTRAINT chk_Fee CHECK (Fee >= 0.0)
 );
 
