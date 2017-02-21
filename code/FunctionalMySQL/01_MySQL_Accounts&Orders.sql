@@ -33,8 +33,8 @@ CREATE TABLE Person (
 	PRIMARY KEY (ID),
 	UNIQUE KEY NameAddress (LastName, FirstName, Address, City, State, Zip), # There won't be two people with the same name in the same house
 	# @todo: check that zip/phone are all digits?
-	CONSTRAINT chk_Zip CHECK (Zip RLIKE '^[0-9]{5}$');
-	CONSTRAINT chk_Phone CHECK (Phone RLIKE '^[0-9]{10}$');
+	CONSTRAINT chk_Zip CHECK (Zip RLIKE '^[0-9]{5}$'),
+	CONSTRAINT chk_Phone CHECK (Phone RLIKE '^[0-9]{10}$')
 );
 
 CREATE TABLE Customer ( # IsA Person
