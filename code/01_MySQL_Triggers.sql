@@ -103,6 +103,24 @@ $$
 DELIMITER ;
 
 
+# If a movie is rented and not expired, delete from Queued
+DELIMITER $$
+CREATE PROCEDURE deleteFromQueue (IN New_LoanStatus ENUM('Expired', 'Active'), New_CustomerID INT, New_MovieID INT)
+BEGIN
+	IF 	New_LoanStatus = 'Active' AND
+		1 = (SELECT COUNT(*)
+			FROM QUEUED Q
+			WHERE New_MovieID = Q.MovieID AND
+                  New_CustomerID = Q.CustomerID
+		)
+	THEN 
+		DELETE FROM QUEUED 
+		WHERE MovieID = New_MovieID AND
+			  CustomerID = New_CustomerID;
+    END IF;
+END;
+$$
+DELIMITER ;
 
 
 ############################
@@ -154,8 +172,14 @@ DELIMITER ;
 
 # @TODO: Available copies can't be more than total
 
-# @TODO: If customer rents a movie, delete it from their queue (if it exists)
+
+# If customer rents a movie, delete it from their queue (if it exists)
+DELIMITER $$
+CREATE TRIGGER Rent_Out_Queue AFTER INSERT ON RENTED
+FOR EACH ROW BEGIN
+	CALL deleteFromQueue(NEW.LoanStatus, NEW.CustomerID, NEW.MovieID);
+END;
+$$
+DELIMITER ;
 
 # @TODO: Other triggers?
-
-
