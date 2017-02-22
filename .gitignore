@@ -1,2 +1,5 @@
 Makefile
+!test/Makefile
 clean_sql.txt
+test/output.sql
+test/output.sql2
