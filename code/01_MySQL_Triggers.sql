@@ -1,11 +1,11 @@
-#Zhe Lin 
+#Zhe Lin 109369879
 #Sean Pesce 107102508
-#Weichao Zhao 
+#Weichao Zhao 109957656
 #
 #CSE305 Database Project Part 1
 #Triggers
 
-# @TODO: Add Zhe and Weichao SBU Student ID Numbers in header
+
 
 ############################
 #########Procedures#########
