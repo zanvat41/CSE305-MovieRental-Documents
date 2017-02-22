@@ -5,7 +5,7 @@
 #CSE305 Database Project Part 1
 #Triggers
 
-
+# @TODO: Add Zhe and Weichao SBU Student ID Numbers in header
 
 ############################
 #########Procedures#########
@@ -13,7 +13,6 @@
 
 
 # Checks that an employee began working before they helped with an order:
-# Procedure:
 DELIMITER $$
 CREATE PROCEDURE EmployeeExistsBeforeOrder (IN New_EmployeeID INT, New_OrderDate DATETIME)
 BEGIN
@@ -31,7 +30,6 @@ DELIMITER ;
 
 
 # Checks that a customer's account was created before they placed an order:
-# Procedure:
 DELIMITER $$
 CREATE PROCEDURE CustomerExistsBeforeOrder (IN New_CustomerID INT, New_OrderDate DATETIME)
 BEGIN
@@ -49,7 +47,6 @@ DELIMITER ;
 
 
 # Checks that a customer's account was created before they put a movie in their queue:
-# Procedure:
 DELIMITER $$
 CREATE PROCEDURE CustomerExistsBeforeQueue (IN New_CustomerID INT, New_DateAdded DATETIME)
 BEGIN
@@ -67,7 +64,6 @@ DELIMITER ;
 
 
 # Checks that customer isn't renting 2 copies of the same movie at the same time:
-# Procedure:
 DELIMITER $$
 CREATE PROCEDURE CantHaveTwoCopies (
 	IN New_LoanStatus ENUM('Expired', 'Active'), New_CustomerID INT, New_MovieID INT)
@@ -139,5 +135,9 @@ DELIMITER ;
 # @TODO: if less than 1 copy available, cant create Rented instance with 'Active'
 
 # @TODO: Available copies can't be more than total
+
+# @TODO: If customer rents a movie, delete it from their queue (if it exists)
+
+# @TODO: Other triggers?
 
 

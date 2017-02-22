@@ -5,9 +5,7 @@
 #CSE305 Database Project Part 1
 #Employee, Customer Account & Order Schema
 
-
-# @TODO: Keep in mind that MySQL parses constraints, but does not enforce them. Implement replacement triggers later.
-
+# @TODO: Add Zhe and Weichao SBU Student ID Numbers in header
 
 ##########################
 ######Entity Tables#######
@@ -26,13 +24,12 @@ CREATE TABLE Person (
 		'MT','NC','ND','NE','NH','NJ','NM','NV','NY',
 		'OH','OK','OR','PA','RI','SC','SD','TN','TX',
 		'UT','VA','VT','WA','WI','WV','WY',
-		'AS','DC','FM','GU','MH','MP','PR','PW','VI', # Territories/federal districts on this line
-		'AA','AE','AP'), # Military bases on this line
+		'AS','DC','FM','GU','MH','MP','PR','PW','VI', # Territories/federal districts
+		'AA','AE','AP'), # Military bases
 	Zip VARCHAR(10),
 	Phone VARCHAR(20),
 	PRIMARY KEY (ID),
 	UNIQUE KEY NameAddress (LastName, FirstName, Address, City, State, Zip), # There won't be two people with the same name in the same house
-	# @todo: check that zip/phone are all digits?
 	CONSTRAINT chk_Zip CHECK (Zip RLIKE '^[0-9]{5}$'),
 	CONSTRAINT chk_Phone CHECK (Phone RLIKE '^[0-9]{10}$')
 );
@@ -107,7 +104,6 @@ CREATE TABLE Queued (
 	FOREIGN KEY (MovieID) REFERENCES Movie(ID)
 		ON DELETE CASCADE
 		ON UPDATE CASCADE
-	# @TODO: If customer rents this movie, delete it from their queue
 );
 
 
@@ -135,14 +131,14 @@ CREATE VIEW CurrentLoans (CustomerID, MovieID, Title, OrderDate) AS (
 	WHERE LoanStatus = 'Active'
 );
 
-# @TODO: add more views?
+# @TODO: Other views?
 
 
 
 ############################
 #########Assertions#########
 ############################
-# NOTE: MySQL doesn't support assertions. Replace these with triggers in the real implementation
+# NOTE: MySQL doesn't support assertions. These were replaced with triggers.
 
 # Asserts that an employee began working before they helped with any orders:
 CREATE ASSERTION EmployeeExistsForOrder CHECK (

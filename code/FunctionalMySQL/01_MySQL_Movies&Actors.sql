@@ -5,6 +5,7 @@
 #CSE305 Database Project Part 1
 #Actor & Movie Schema
 
+# @TODO: Add Zhe and Weichao SBU Student ID Numbers in header
 
 ##########################
 ######Entity Tables#######
@@ -13,13 +14,13 @@
 CREATE TABLE Movie (
 	ID INT,
 	Title VARCHAR(64) NOT NULL,
-	Genre ENUM ('Comedy', 'Drama', 'Action', 'Foreign'),
+	Genre ENUM ('Comedy', 'Drama', 'Action', 'Foreign'), # ENUM acts as a domain
 	Fee FLOAT DEFAULT 0.00,
 	TotalCopies INT DEFAULT 0,
 	AvailableCopies INT DEFAULT 0,
 	Rating INT,
 	PRIMARY KEY (ID),
-	CONSTRAINT chk_Rating CHECK (Rating IN (1, 2, 3, 4, 5)), # This Constraint also acts as a domain
+	CONSTRAINT chk_Rating CHECK (Rating IN (1, 2, 3, 4, 5)), # CONSTRAINT acts as a domain
 	CONSTRAINT chk_TotalCopies CHECK (TotalCopies >= 0),
 	CONSTRAINT chk_AvailableCopies CHECK (AvailableCopies >= 0),
 	CONSTRAINT chk_AvailableVsTotalCopies CHECK (AvailableCopies <= TotalCopies),
@@ -30,11 +31,11 @@ CREATE TABLE Actor (
 	ID INT,
 	FirstName VARCHAR(64) NOT NULL,
 	LastName VARCHAR(64) NOT NULL,
-	Gender ENUM('M','F'), # This ENUM also acts as a domain
+	Gender ENUM('M','F'), # ENUM acts as a domain
 	Age INT,
 	Rating INT,
 	PRIMARY KEY (ID),
-	CONSTRAINT chk_Rating CHECK (Rating IN (1, 2, 3, 4, 5)),
+	CONSTRAINT chk_Rating CHECK (Rating IN (1, 2, 3, 4, 5)), # CONSTRAINT acts as a domain
 	CONSTRAINT chk_Age CHECK (Age >= 0)
 );
 
@@ -77,3 +78,5 @@ CREATE VIEW Roles (ActorID, MovieID, Title, Genre, MovieRating) AS (
 	SELECT ActorID, MovieID, Title, Genre, Movie.Rating
 	FROM (Actor JOIN Casted ON (Actor.ID = ActorID)) JOIN Movie ON (MovieID = Movie.ID)
 );
+
+# @TODO: Other views?
