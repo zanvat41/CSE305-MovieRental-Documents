@@ -1,23 +1,23 @@
-The following is a list of INSERT statements that can be used to test the database:
+# The following is a list of INSERT statements that can be used to test the database:
 
 
 
-INSERT INTO Movie (ID, Title, Genre, Fee, Copies, Rating)
-VALUES (1, 'BvS', 'Comedy', 0.50, 3, 3);
-INSERT INTO Movie (ID, Title, Genre, Fee, Copies, Rating)
-VALUES (2, 'LoTR', 'Drama', 0.60, 5, 4);
-INSERT INTO Movie (ID, Title, Genre, Fee, Copies, Rating)
-VALUES (3, 'Hackers', 'Action', 0.70, 8, 5);
-INSERT INTO Movie (ID, Title, Genre, Fee, Copies, Rating)
-VALUES (4, 'Zoolander', 'Comedy', 1.10, 2, 5);
-INSERT INTO Movie (ID, Title, Genre, Fee, Copies, Rating)
-VALUES (5, 'A.T.L.', 'Drama', 0.43, 6, 3);
-INSERT INTO Movie (ID, Title, Genre, Fee, Copies, Rating)
-VALUES (6, 'Crouching Tiger Hidden Dragon', 'Foreign', 0.15, 3, 2);
-INSERT INTO Movie (ID, Title, Genre, Fee, Copies, Rating)
-VALUES (7, 'Harry Potter', 'Action', 2.34, 5, 5);
-INSERT INTO Movie (ID, Title, Genre, Fee, Copies, Rating)
-VALUES (8, 'Star Wars', 'Action', 2.50, 1, 3);
+INSERT INTO Movie (ID, Title, Genre, Fee, TotalCopies, AvailableCopies, Rating)
+VALUES (1, 'BvS', 'Comedy', 0.50, 5, 3, 3);
+INSERT INTO Movie (ID, Title, Genre, Fee, TotalCopies, AvailableCopies, Rating)
+VALUES (2, 'LoTR', 'Drama', 0.60, 5, 5, 4);
+INSERT INTO Movie (ID, Title, Genre, Fee, TotalCopies, AvailableCopies, Rating)
+VALUES (3, 'Hackers', 'Action', 0.70, 10, 8, 5);
+INSERT INTO Movie (ID, Title, Genre, Fee, TotalCopies, AvailableCopies, Rating)
+VALUES (4, 'Zoolander', 'Comedy', 1.10, 17, 2, 5);
+INSERT INTO Movie (ID, Title, Genre, Fee, TotalCopies, AvailableCopies, Rating)
+VALUES (5, 'A.T.L.', 'Drama', 0.43, 7, 6, 3);
+INSERT INTO Movie (ID, Title, Genre, Fee, TotalCopies, AvailableCopies, Rating)
+VALUES (6, 'Crouching Tiger Hidden Dragon', 'Foreign', 0.15, 6, 3, 2);
+INSERT INTO Movie (ID, Title, Genre, Fee, TotalCopies, AvailableCopies, Rating)
+VALUES (7, 'Harry Potter', 'Action', 2.34, 8, 5, 5);
+INSERT INTO Movie (ID, Title, Genre, Fee, TotalCopies, AvailableCopies, Rating)
+VALUES (8, 'Star Wars', 'Action', 2.50, 20, 1, 3);
 
 
 INSERT INTO Actor (ID, FirstName, LastName, Gender, Age, Rating)
