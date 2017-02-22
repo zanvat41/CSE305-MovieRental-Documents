@@ -68,10 +68,10 @@ DELIMITER $$
 CREATE PROCEDURE CantHaveTwoCopies (
 	IN New_LoanStatus ENUM('Expired', 'Active'), New_CustomerID INT, New_MovieID INT)
 BEGIN
-	IF 1 <= (SELECT COUNT(*)
+	IF 	New_LoanStatus = 'Active' AND
+		1 <= (SELECT COUNT(*)
 			FROM Rented R1
 			WHERE
-				New_LoanStatus = 'Active' AND
 				New_CustomerID = R1.CustomerID AND
 				New_MovieID = R1.MovieID AND
 				R1.LoanStatus = 'Active'
@@ -79,6 +79,24 @@ BEGIN
 	THEN 
 		SIGNAL SQLSTATE 'E0928'
             SET MESSAGE_TEXT = 'Rental conflict: Customer is already renting a copy of this movie.';
+    END IF;
+END;
+$$
+DELIMITER ;
+
+
+# Checks that customer can't rent a movie if no copies are available:
+DELIMITER $$
+CREATE PROCEDURE CantRentUnavailable (IN New_MovieID INT, New_LoanStatus ENUM('Expired', 'Active'))
+BEGIN
+	IF 	New_LoanStatus = 'Active' AND
+		1 > (SELECT AvailableCopies
+			FROM Movie M
+			WHERE New_MovieID = M.ID
+		)
+	THEN 
+		SIGNAL SQLSTATE 'E0928'
+            SET MESSAGE_TEXT = 'Rental conflict: There are no available copies of this movie.';
     END IF;
 END;
 $$
@@ -95,6 +113,7 @@ DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER Rented_PreInsert_Checks BEFORE INSERT ON Rented
 FOR EACH ROW BEGIN
+	CALL CantRentUnavailable(NEW.MovieID, NEW.LoanStatus);
 	CALL CantHaveTwoCopies(NEW.LoanStatus, NEW.CustomerID, NEW.MovieID);
 	CALL CustomerExistsBeforeOrder (NEW.CustomerID, NEW.OrderDate);
 	CALL EmployeeExistsBeforeOrder(NEW.EmployeeID, NEW.OrderDate);
@@ -105,6 +124,7 @@ DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER Rented_PreUpdate_Checks BEFORE UPDATE ON Rented
 FOR EACH ROW BEGIN
+	CALL CantRentUnavailable(NEW.MovieID, NEW.LoanStatus);
 	CALL CantHaveTwoCopies(NEW.LoanStatus, NEW.CustomerID, NEW.MovieID);
 	CALL CustomerExistsBeforeOrder (NEW.CustomerID, NEW.OrderDate);
 	CALL EmployeeExistsBeforeOrder(NEW.EmployeeID, NEW.OrderDate);
@@ -131,8 +151,6 @@ $$
 DELIMITER ;
 
 
-
-# @TODO: if less than 1 copy available, cant create Rented instance with 'Active'
 
 # @TODO: Available copies can't be more than total
 
