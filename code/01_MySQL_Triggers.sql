@@ -169,6 +169,13 @@ $$
 DELIMITER ;
 
 
+DELIMITER $$
+CREATE TRIGGER Rent_Again_Out_Queue AFTER UPDATE ON RENTED
+FOR EACH ROW BEGIN
+	CALL deleteFromQueue(NEW.LoanStatus, NEW.CustomerID, NEW.MovieID);
+END;
+$$
+DELIMITER ;
 
 # @TODO: Available copies can't be more than total
 
