@@ -102,6 +102,20 @@ END;
 $$
 DELIMITER ;
 
+# Available copies number cannot be exceed Total copies number
+DELIMITER $$
+CREATE PROCEDURE CantExceedTotal (IN New_TotalCopies INT, New_AvailableCopies INT)
+BEGIN
+	IF 	New_TotalCopies < New_AvailableCopies
+    
+	THEN 
+		SIGNAL SQLSTATE 'E0928'
+            SET MESSAGE_TEXT = 'Logical Error: Available copies number cannot be exceed Total copies number.';
+    END IF;
+END;
+$$
+DELIMITER ;
+
 
 # If a movie is rented and not expired, delete from Queued
 DELIMITER $$
@@ -111,12 +125,12 @@ BEGIN
 		1 = (SELECT COUNT(*)
 			FROM QUEUED Q
 			WHERE New_MovieID = Q.MovieID AND
-                  New_CustomerID = Q.CustomerID
+				New_CustomerID = Q.CustomerID
 		)
 	THEN 
 		DELETE FROM QUEUED 
 		WHERE MovieID = New_MovieID AND
-			  CustomerID = New_CustomerID;
+			CustomerID = New_CustomerID;
     END IF;
 END;
 $$
@@ -169,15 +183,16 @@ $$
 DELIMITER ;
 
 
+
+#  Available copies can't be more than total
 DELIMITER $$
-CREATE TRIGGER Rent_Again_Out_Queue AFTER UPDATE ON RENTED
+CREATE TRIGGER Available_Copies_Check BEFORE UPDATE ON Movie
 FOR EACH ROW BEGIN
-	CALL deleteFromQueue(NEW.LoanStatus, NEW.CustomerID, NEW.MovieID);
+	CALL CantExceedTotal(NEW.TotalCopies, NEW.AvailableCopies);
 END;
 $$
 DELIMITER ;
 
-# @TODO: Available copies can't be more than total
 
 
 # If customer rents a movie, delete it from their queue (if it exists)
@@ -189,4 +204,13 @@ END;
 $$
 DELIMITER ;
 
+
+DELIMITER $$
+CREATE TRIGGER Rent_Again_Out_Queue AFTER UPDATE ON RENTED
+FOR EACH ROW BEGIN
+	CALL deleteFromQueue(NEW.LoanStatus, NEW.CustomerID, NEW.MovieID);
+END;
+$$
+DELIMITER ;
 # @TODO: Other triggers?
+
