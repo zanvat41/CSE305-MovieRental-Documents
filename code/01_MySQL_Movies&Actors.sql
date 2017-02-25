@@ -33,7 +33,7 @@ CREATE TABLE Actor (
 	LastName VARCHAR(64) NOT NULL,
 	Gender ENUM('M','F'), # ENUM acts as a domain
 	Age INT,
-	Rating INT,
+	#Rating INT,
 	PRIMARY KEY (ID),
 	CONSTRAINT chk_Rating CHECK (Rating IN (1, 2, 3, 4, 5)), # CONSTRAINT acts as a domain
 	CONSTRAINT chk_Age CHECK (Age >= 0)
@@ -52,6 +52,7 @@ CREATE TABLE Casted (
 	ActorID INT,
 	MovieID INT,
 	Role VARCHAR(128),
+	ActorRating INT,
 	PRIMARY KEY (ActorID, MovieID),
 	FOREIGN KEY (ActorID) REFERENCES Actor(ID)
 		ON DELETE CASCADE
