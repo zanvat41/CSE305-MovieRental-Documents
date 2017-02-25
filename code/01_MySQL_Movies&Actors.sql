@@ -33,9 +33,9 @@ CREATE TABLE Actor (
 	LastName VARCHAR(64) NOT NULL,
 	Gender ENUM('M','F'), # ENUM acts as a domain
 	Age INT,
-	#Rating INT,
+	# Rating INT,
 	PRIMARY KEY (ID),
-	CONSTRAINT chk_Rating CHECK (Rating IN (1, 2, 3, 4, 5)), # CONSTRAINT acts as a domain
+	# CONSTRAINT chk_Rating CHECK (Rating IN (1, 2, 3, 4, 5)), # CONSTRAINT acts as a domain
 	CONSTRAINT chk_Age CHECK (Age >= 0)
 );
 
