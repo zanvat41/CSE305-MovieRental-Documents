@@ -82,3 +82,11 @@ CREATE VIEW Roles (ActorID, MovieID, Title, Genre, MovieRating) AS (
 );
 
 # @TODO: Other views?
+
+# Do we need the view likes this? Available movies for particular type?
+#A list of all movies that are Comedy
+CREATE VIEW ComedyMovies (MovieId, Title, MovieRating, AvailableCopies, Fee) AS (
+	SELECT MovieID, ActorID, Title, MovieRating, AvailableCopies, Fee
+    FROM Movie
+    WHERE Genre = 'Comedy'
+);
