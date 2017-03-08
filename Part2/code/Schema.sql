@@ -1,0 +1,214 @@
+# Zhe Lin 109369879
+# Sean Pesce 107102508
+# Weichao Zhao 109957656
+#
+# CSE305 Database Project Part 2
+# Database Schema - Entities & Relationships
+
+# @TODO: Add triggers/procedures for each constraint in this schema (constraints parsed but not supported by MySQL)
+
+##########################
+######Entity Tables#######
+##########################
+
+CREATE TABLE Person (
+	ID CHAR(9),	# This is a customer's ID and an employee's SSN
+	LastName VARCHAR(64),
+	FirstName VARCHAR(64),
+	Address VARCHAR(64),
+	City VARCHAR(64),
+	# ENUMs also act as domains:
+	State ENUM('AK','AL','AR','AZ','CA','CO','CT', # ENUM Domain (for valid state/territory/base abbreviations)
+		'DE','FL','GA','HI','IA','ID','IL','IN','KS',
+		'KY','LA','MA','MD','ME','MI','MN','MO','MS',
+		'MT','NC','ND','NE','NH','NJ','NM','NV','NY',
+		'OH','OK','OR','PA','RI','SC','SD','TN','TX',
+		'UT','VA','VT','WA','WI','WV','WY',
+		'AS','DC','FM','GU','MH','MP','PR','PW','VI', # Territories/federal districts
+		'AA','AE','AP'), # Military bases
+	Zip CHAR(5),
+	Phone CHAR(10),
+	PRIMARY KEY (ID),
+	UNIQUE KEY NameAddress (LastName, FirstName, Address, City, State, Zip), # There won't be two people with the same name in the same house
+	CONSTRAINT chk_ID CHECK (ID RLIKE '^[0-9]{9}$'), # Check that ID is formatted as 9 numbers
+	CONSTRAINT chk_Zip CHECK (Zip RLIKE '^[0-9]{5}$'),
+	CONSTRAINT chk_Phone CHECK (Phone RLIKE '^[0-9]{10}$')
+);
+
+CREATE TABLE Customer ( # IsA Person
+	ID CHAR(9),	# References Person(ID)
+	Email VARCHAR(64) NOT NULL,
+	CreditCard CHAR(16) NOT NULL,
+	Rating INT DEFAULT 1, 	# Customer Rating starts low because it is based on usage; new customers have never rented a movie
+	PRIMARY KEY (ID),
+	FOREIGN KEY (ID) REFERENCES Person(ID)
+		ON DELETE CASCADE
+		ON UPDATE CASCADE,
+	UNIQUE KEY (Email), # Don't allow multiple accounts tied to the same email address
+	CONSTRAINT chk_ID CHECK (ID RLIKE '^[0-9]{9}$'),  # Check that AccountID is formatted as 9 numbers
+	CONSTRAINT chk_Rating CHECK (Rating IN (1, 2, 3, 4, 5)),
+	CONSTRAINT chk_Email CHECK (Email LIKE '%_@_%._%'), # The '%' char checks for 0 or more chars; '_' checks for exactly 1 character
+	CONSTRAINT chk_CC CHECK (CreditCard RLIKE '^[0-9]{16}$') # Check that CC# is composed of only numbers
+);
+
+CREATE TABLE Account (
+	ID INT,
+	CustomerID CHAR(9) NOT NULL,	# Account has participation constraint and must belong to a customer (HasAccount relationship)
+	Type ENUM('Limited', 'Unlimited', 'Unlimited+', 'Unlimited++') NOT NULL DEFAULT 'Limited', # ENUM Domain
+	Created DATE,		# DATEs are formatted like so: '2000-12-31'
+	PRIMARY KEY (ID),
+	FOREIGN KEY (CustomerID) REFERENCES Customer(ID)
+		ON DELETE NO ACTION
+		ON UPDATE CASCADE,
+	CONSTRAINT chk_ID CHECK (ID >= 0),
+	CONSTRAINT chk_CustID CHECK (CustomerID RLIKE '^[0-9]{9}$')
+);
+
+CREATE TABLE Employee ( # IsA Person
+	SSN CHAR(9), # References Person(ID)
+	StartDate DATE,	# Start of employment
+	# Type ENUM('Manager','Customer Rep'),	# @TODO: Do we need to implement this attribute or is it all determined by permissions?
+	HourlyRate FLOAT NOT NULL DEFAULT 20.00,
+	PRIMARY KEY (SSN),
+	FOREIGN KEY (SSN) REFERENCES Person(ID)
+		ON DELETE CASCADE
+		ON UPDATE CASCADE,
+	CONSTRAINT chk_Pay CHECK (HourlyRate >= 9.00), # Make sure employees don't get paid below minimum wage @TODO: make min wage a constant?
+	CONSTRAINT chk_SSN CHECK (SSN RLIKE '^[0-9]{9}$') # Check that SSN is formatted as 9 numbers
+	# @TODO: On Employee INSERT/UPDATE, if SSN conflicts with some customer's account ID, change customer ID
+	# @TODO: On Employee INSERT, grant permissions to determine whether the user is a customer rep or manager
+	# @TODO: Make sure there is always at least 1 manager
+);
+
+CREATE TABLE Movie (
+	ID INT,
+	Title VARCHAR(64) NOT NULL,
+	Genre ENUM ('Comedy', 'Drama', 'Action', 'Foreign'), # ENUM acts as a domain
+	Fee FLOAT DEFAULT 0.00,
+	TotalCopies INT DEFAULT 0,
+	Rating INT,
+	PRIMARY KEY (ID),
+	CONSTRAINT chk_ID CHECK (ID >= 0),
+	CONSTRAINT chk_Rating CHECK (Rating IN (1, 2, 3, 4, 5)), # CONSTRAINT acts as a domain
+	CONSTRAINT chk_TotalCopies CHECK (TotalCopies >= 0),
+	CONSTRAINT chk_AvailableCopies CHECK (AvailableCopies >= 0),
+	CONSTRAINT chk_AvailableVsTotalCopies CHECK (AvailableCopies <= TotalCopies),
+	CONSTRAINT chk_Fee CHECK (Fee >= 0.0)
+);
+
+CREATE TABLE Actor (
+	ID INT,
+	FirstName VARCHAR(64) NOT NULL,
+	LastName VARCHAR(64) NOT NULL,
+	Gender ENUM('M','F'), # ENUM acts as a domain
+	Age INT,
+	Rating INT,
+	PRIMARY KEY (ID),
+	CONSTRAINT chk_ID CHECK (ID >= 0),
+	CONSTRAINT chk_Rating CHECK (Rating IN (1, 2, 3, 4, 5)), # CONSTRAINT acts as a domain
+	CONSTRAINT chk_Age CHECK (Age >= 0)
+);
+
+
+
+
+#######################
+##Relationship Tables##
+#######################
+
+
+
+# Represents movies that have been rented by customers
+CREATE TABLE Rental (
+	OrderID INT,
+	AccountID INT,
+	MovieID INT,
+	EmployeeID INT,
+	OrderDate DATETIME NOT NULL, # DATETIMEs are formatted like so: '2000-12-31 23:59:59'
+	ReturnDate DATETIME,
+	PRIMARY KEY (OrderID),
+	FOREIGN KEY (CustomerID) REFERENCES Customer(AccountID)
+		ON DELETE NO ACTION		# Grader correction from part 1
+		ON UPDATE CASCADE,
+	FOREIGN KEY (MovieID) REFERENCES Movie(ID)
+		ON DELETE NO ACTION		# Grader correction from part 1
+		ON UPDATE CASCADE,
+	FOREIGN KEY (EmployeeID) REFERENCES Employee(ID)
+		ON DELETE NO ACTION		# Grader correction from part 1
+		ON UPDATE CASCADE,
+	UNIQUE KEY (CustomerID, MovieID, OrderDate) # Can't rent multiple copies of the same movie at the same time
+	# @TODO: Trigger to make sure ReturnDate is after OrderDate
+	# @TODO: Use VIEWs to determine which movies a customer has out and how many copies of a movie are available
+);
+
+
+# Represents movies that users have added to their Movie Queue (aka Wishlist)
+CREATE TABLE Queued (
+	CustomerID INT,
+	MovieID INT,
+	DateAdded DATETIME,	# Used to sort movies in the queue
+	PRIMARY KEY (CustomerID, MovieID),
+	FOREIGN KEY (CustomerID) REFERENCES Customer(AccountID)
+		ON DELETE CASCADE
+		ON UPDATE CASCADE,
+	FOREIGN KEY (MovieID) REFERENCES Movie(ID)
+		ON DELETE CASCADE
+		ON UPDATE CASCADE
+);
+
+
+# Represents a relationship between an actor and a movie they have been
+#  casted in.
+CREATE TABLE Casted (
+	ActorID INT,
+	MovieID INT,
+	Role VARCHAR(128),
+	PRIMARY KEY (ActorID, MovieID),
+	FOREIGN KEY (ActorID) REFERENCES Actor(ID)
+		ON DELETE NO ACTION		# Grader correction from part 1
+		ON UPDATE CASCADE,
+	FOREIGN KEY (MovieID) REFERENCES Movie(ID)
+		ON DELETE NO ACTION		# Grader correction from part 1
+		ON UPDATE CASCADE
+	# Moved actor rating back to Actor table because part 1 solution specifies it that way
+);
+
+
+
+#######################
+#########Views#########
+#######################
+
+CREATE VIEW MovieQueue (CustomerID, MovieID, DateAdded) AS (
+	SELECT CustomerID, MovieID, DateAdded
+	FROM Queued JOIN Customer ON (CustomerID = AccountID)
+	ORDER BY DateAdded ASC
+);
+
+CREATE VIEW RentalHistory (CustomerID, MovieID, Title, Genre, Rating, OrderDate, LoanStatus) AS (
+	SELECT CustomerID, MovieID, Title, Genre, Movie.Rating, OrderDate, LoanStatus
+	FROM Rental JOIN Movie ON (MovieID = ID)
+	ORDER BY OrderDate DESC
+);
+
+# List of movies that customers currently have loaned:
+CREATE VIEW CurrentLoans (CustomerID, MovieID, Title, OrderDate) AS (
+	SELECT CustomerID, MovieID, Title, OrderDate
+	FROM Rental JOIN Movie ON (MovieID = ID)
+	WHERE LoanStatus = 'Active'
+);
+
+#A list of all actors casted in each movie
+CREATE VIEW CastList (MovieID, ActorID, FirstName, LastName, Gender, Age, ActorRating) AS (
+	SELECT MovieID, ActorID, FirstName, LastName, Gender, Age, Actor.Rating
+	FROM (Actor JOIN Casted ON (Actor.ID = ActorID)) JOIN Movie ON (MovieID = Movie.ID)
+);
+
+#A list of all movies each actor has been in
+CREATE VIEW Roles (ActorID, MovieID, Title, Genre, MovieRating) AS (
+	SELECT ActorID, MovieID, Title, Genre, Movie.Rating
+	FROM (Actor JOIN Casted ON (Actor.ID = ActorID)) JOIN Movie ON (MovieID = Movie.ID)
+);
+
+# @TODO: Other views?
+
