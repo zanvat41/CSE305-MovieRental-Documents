@@ -38,12 +38,12 @@ DELIMITER $$
 CREATE PROCEDURE AccountExistsBeforeOrder (IN New_AccountID INT, New_OrderID INT)
 BEGIN
 	IF  (SELECT DATE(OrderDate)
-		FROM _Order
-		WHERE New_OrderID = ID)
+		FROM _Order O
+		WHERE New_OrderID = O.ID)
 		<
-		(SELECT Created
-			FROM Account
-			WHERE New_AccountID = AccountID
+		(SELECT A.Created
+			FROM Account A
+			WHERE New_AccountID = A.ID
 		)
 	THEN 
 		SIGNAL SQLSTATE 'E0451'
@@ -58,9 +58,9 @@ DELIMITER ;
 DELIMITER $$
 CREATE PROCEDURE AccountExistsBeforeQueue (IN New_AccountID INT, New_DateAdded DATETIME)
 BEGIN
-	IF DATE(New_DateAdded) < (SELECT Created
-			FROM Account
-			WHERE New_AccountID = AccountID
+	IF DATE(New_DateAdded) < (SELECT A.Created
+			FROM Account A
+			WHERE New_AccountID = A.ID
 		)
 	THEN 
 		SIGNAL SQLSTATE 'E0451'
@@ -121,15 +121,15 @@ BEGIN
 				WHERE New_OrderID = O1.ID))
 				AND (
 				(SELECT TotalCopies
-				FROM Movie
-				WHERE MovieID = New_MovieID
+				FROM Movie M
+				WHERE M.ID = New_MovieID
 				)
 				<=
 				(SELECT COUNT(*)
 				FROM Rental R JOIN _Order O2 ON (R.OrderID = O2.ID)
 				WHERE New_MovieID = R.MovieID AND
 				O2.ReturnDate = NULL AND
-				New_OrderID != O2.OrderID
+				New_OrderID != O2.ID
 				))
 	THEN 
 		SIGNAL SQLSTATE 'E0928'
@@ -142,7 +142,7 @@ DELIMITER ;
 
 # If a movie is rented and not expired, delete from Queued:
 DELIMITER $$
-CREATE PROCEDURE DeleteFromQueue (IN New_AccountID INT, New_MovieID INT, New_OrderID INT)
+CREATE PROCEDURE DeleteFromQueue (IN New_AccountID INT, New_MovieID INT, New_OrderID INT) # @TODO: Delete this procedure? Can movies be queued while checked out?
 BEGIN
 	IF	(NULL = (SELECT ReturnDate
 				FROM _Order

@@ -103,7 +103,7 @@ INSERT INTO _Order (ID, OrderDate, ReturnDate)
 VALUES (1, '2009-11-11 10:00:00', '2009-11-14 00:00:00'); # Lewis Phillip rented The Godfather
 
 INSERT INTO Rental (OrderID, AccountID, MovieID, EmployeeID)
-VALUES (1, 1, 1, 1); # Lewis Phillip rented The Godfather
+VALUES (1, 1, 1, '123456789'); # Lewis Phillip rented The Godfather
 
 
 
@@ -111,7 +111,7 @@ INSERT INTO _Order (ID, OrderDate, ReturnDate)
 VALUES (2, '2009-11-11 18:15:00', NULL); # Victor Du rented Borat
 
 INSERT INTO Rental (OrderID, AccountID, MovieID, EmployeeID)
-VALUES (2, 2, 3, 2); # Victor Du rented Borat
+VALUES (2, 2, 3, '789123456'); # Victor Du rented Borat
 
 
 
@@ -119,7 +119,7 @@ INSERT INTO _Order (ID, OrderDate, ReturnDate)
 VALUES (3, '2009-11-12 09:30:00', NULL); # Lewis Phillip rented Borat
 
 INSERT INTO Rental (OrderID, AccountID, MovieID, EmployeeID)
-VALUES (3, 1, 3, 2); # Lewis Phillip rented Borat
+VALUES (3, 1, 3, '789123456'); # Lewis Phillip rented Borat
 
 
 
@@ -127,7 +127,7 @@ INSERT INTO _Order (ID, OrderDate, ReturnDate)
 VALUES (4, '2009-11-21 22:22:00', NULL); # Victor Du rented The Shawshank Redemption
 
 INSERT INTO Rental (OrderID, AccountID, MovieID, EmployeeID)
-VALUES (4, 2, 2, 1); # Victor Du rented The Shawshank Redemption
+VALUES (4, 2, 2, '123456789'); # Victor Du rented The Shawshank Redemption
 
 
 
