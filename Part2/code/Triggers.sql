@@ -14,11 +14,15 @@
 
 # Checks that an employee began working before they helped with an order:
 DELIMITER $$
-CREATE PROCEDURE EmployeeExistsBeforeOrder (IN New_EmployeeID INT, New_OrderDate DATETIME)
+CREATE PROCEDURE EmployeeExistsBeforeOrder (IN New_EmployeeID CHAR(9), New_OrderID INT)
 BEGIN
-	IF DATE(New_OrderDate) < (SELECT StartDate
+	IF (SELECT DATE(OrderDate)
+		FROM _Order
+		WHERE New_OrderID = ID)
+		<
+		(SELECT StartDate
 			FROM Employee
-			WHERE New_EmployeeID = Employee.ID
+			WHERE New_EmployeeID = Employee.SSN
 		)
 	THEN 
 		SIGNAL SQLSTATE 'E0451'
@@ -31,11 +35,15 @@ DELIMITER ;
 
 # Checks that a customer's account was created before they placed an order:
 DELIMITER $$
-CREATE PROCEDURE CustomerExistsBeforeOrder (IN New_CustomerID INT, New_OrderDate DATETIME)
+CREATE PROCEDURE AccountExistsBeforeOrder (IN New_AccountID INT, New_OrderID INT)
 BEGIN
-	IF DATE(New_OrderDate) < (SELECT AccountCreated
-			FROM Customer
-			WHERE New_CustomerID = AccountID
+	IF  (SELECT DATE(OrderDate)
+		FROM _Order
+		WHERE New_OrderID = ID)
+		<
+		(SELECT Created
+			FROM Account
+			WHERE New_AccountID = AccountID
 		)
 	THEN 
 		SIGNAL SQLSTATE 'E0451'
@@ -46,13 +54,13 @@ $$
 DELIMITER ;
 
 
-# Checks that a customer's account was created before they put a movie in their queue:
+# Checks that an account was created before they put a movie in their queue:
 DELIMITER $$
-CREATE PROCEDURE CustomerExistsBeforeQueue (IN New_CustomerID INT, New_DateAdded DATETIME)
+CREATE PROCEDURE AccountExistsBeforeQueue (IN New_AccountID INT, New_DateAdded DATETIME)
 BEGIN
-	IF DATE(New_DateAdded) < (SELECT AccountCreated
-			FROM Customer
-			WHERE New_CustomerID = AccountID
+	IF DATE(New_DateAdded) < (SELECT Created
+			FROM Account
+			WHERE New_AccountID = AccountID
 		)
 	THEN 
 		SIGNAL SQLSTATE 'E0451'
@@ -65,7 +73,7 @@ DELIMITER ;
 
 # Checks that an order's OrderDate precedes the ReturnDate:
 DELIMITER $$
-CREATE PROCEDURE CantReturnBeforeRenting (IN New_OrderID INT, New_OrderDate DATETIME, New_ReturnDate DATETIME)
+CREATE PROCEDURE CantReturnBeforeRenting (New_OrderDate DATETIME, New_ReturnDate DATETIME)
 BEGIN
 	IF	 (New_ReturnDate != NULL) AND
 		New_ReturnDate < New_OrderDate
@@ -78,19 +86,22 @@ $$
 DELIMITER ;
 
 
-# Checks that customer isn't renting 2 copies of the same movie at the same time:
+# Checks that an account isn't renting 2 copies of the same movie at the same time:
 DELIMITER $$
 CREATE PROCEDURE CantHaveTwoCopies (
-	IN New_OrderID INT, New_ReturnDate DATETIME, New_CustomerID INT, New_MovieID INT)
+	IN New_OrderID INT, New_AccountID INT, New_MovieID INT)
 BEGIN
-	IF 	New_ReturnDate = NULL AND
+	IF 	(NULL = (SELECT ReturnDate
+				FROM _Order O1
+				WHERE O1.ID = New_OrderID))
+		AND
 		EXISTS (SELECT *
-			FROM Rental R1
+			FROM Rental R1 JOIN _Order O2 ON (R1.OrderID = O2.ID)
 			WHERE
-				New_CustomerID = R1.CustomerID AND
+				New_AccountID = R1.AccountID AND
 				New_MovieID = R1.MovieID AND
-				R1.ReturnDate = NULL AND
-				New_OrderID != R1.OrderID
+				O2.ReturnDate = NULL AND
+				New_OrderID != O2.ID
 		)
 	THEN 
 		SIGNAL SQLSTATE 'E0928'
@@ -103,20 +114,23 @@ DELIMITER ;
 
 # Checks that customer can't rent a movie if no copies are available:
 DELIMITER $$
-CREATE PROCEDURE CantRentUnavailable (IN New_OrderID INT, New_MovieID INT, New_ReturnDate DATETIME)
+CREATE PROCEDURE CantRentUnavailable (IN New_OrderID INT, New_MovieID INT)
 BEGIN
-	IF 	New_ReturnDate = NULL AND (
-			(SELECT TotalCopies
-			FROM Movie
-			WHERE MovieID = New_MovieID
-			)
-		 	<=
-		 	(SELECT COUNT(*)
-			FROM Rental R
-			WHERE New_MovieID = R.MovieID AND
-			R.ReturnDate = NULL AND
-			New_OrderID != R.OrderID
-			))
+	IF 	(NULL = (SELECT O1.ReturnDate
+				FROM _Order O1
+				WHERE New_OrderID = O1.ID))
+				AND (
+				(SELECT TotalCopies
+				FROM Movie
+				WHERE MovieID = New_MovieID
+				)
+				<=
+				(SELECT COUNT(*)
+				FROM Rental R JOIN _Order O2 ON (R.OrderID = O2.ID)
+				WHERE New_MovieID = R.MovieID AND
+				O2.ReturnDate = NULL AND
+				New_OrderID != O2.OrderID
+				))
 	THEN 
 		SIGNAL SQLSTATE 'E0928'
             SET MESSAGE_TEXT = 'Rental conflict: There are no available copies of this movie.';
@@ -128,11 +142,14 @@ DELIMITER ;
 
 # If a movie is rented and not expired, delete from Queued:
 DELIMITER $$
-CREATE PROCEDURE DeleteFromQueue (IN New_ReturnDate DATETIME, New_CustomerID INT, New_MovieID INT)
+CREATE PROCEDURE DeleteFromQueue (IN New_AccountID INT, New_MovieID INT, New_OrderID INT)
 BEGIN
-		DELETE FROM QUEUED 
-		WHERE MovieID = New_MovieID AND
-			CustomerID = New_CustomerID;
+	IF	(NULL = (SELECT ReturnDate
+				FROM _Order
+				WHERE New_OrderID = ID))
+	THEN
+		DELETE FROM Queued WHERE Queued.MovieID = New_MovieID AND Queued.AccountID = New_AccountID;
+	END IF;
 END;
 $$
 DELIMITER ;
@@ -146,11 +163,10 @@ DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER Rental_PreInsert_Checks BEFORE INSERT ON Rental
 FOR EACH ROW BEGIN
-	CALL CantRentUnavailable(NEW.OrderID, NEW.MovieID, NEW.ReturnDate);
-	CALL CantHaveTwoCopies(NEW.OrderID, NEW.ReturnDate, NEW.AccountID, NEW.MovieID);
-	CALL CustomerExistsBeforeOrder (NEW.AccountID, NEW.OrderDate);
-	CALL EmployeeExistsBeforeOrder(NEW.EmployeeID, NEW.OrderDate);
-	CALL CantReturnBeforeRenting(NEW.OrderID, NEW.OrderDate, NEW.ReturnDate);
+	CALL CantRentUnavailable(NEW.OrderID, NEW.MovieID);
+	CALL CantHaveTwoCopies(NEW.OrderID, NEW.AccountID, NEW.MovieID);
+	CALL AccountExistsBeforeOrder (NEW.AccountID, NEW.OrderID);
+	CALL EmployeeExistsBeforeOrder(NEW.EmployeeID, NEW.OrderID);
 END;
 $$
 DELIMITER ;
@@ -158,7 +174,7 @@ DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER Rental_PostInsert_Checks AFTER INSERT ON Rental
 FOR EACH ROW BEGIN
-	CALL DeleteFromQueue(NEW.ReturnDate, NEW.AccountID, NEW.MovieID);
+	CALL DeleteFromQueue(NEW.AccountID, NEW.MovieID, NEW.OrderID);
 END;
 $$
 DELIMITER ;
@@ -166,11 +182,10 @@ DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER Rental_PreUpdate_Checks BEFORE UPDATE ON Rental
 FOR EACH ROW BEGIN
-	CALL CantRentUnavailable(NEW.OrderID, NEW.MovieID, NEW.ReturnDate);
-	CALL CantHaveTwoCopies(NEW.OrderID, NEW.ReturnDate, NEW.AccountID, NEW.MovieID);
-	CALL CustomerExistsBeforeOrder (NEW.AccountID, NEW.OrderDate);
-	CALL EmployeeExistsBeforeOrder(NEW.EmployeeID, NEW.OrderDate);
-	CALL CantReturnBeforeRenting(NEW.OrderID, NEW.OrderDate, NEW.ReturnDate);
+	CALL CantRentUnavailable(NEW.OrderID, NEW.MovieID);
+	CALL CantHaveTwoCopies(NEW.OrderID, NEW.AccountID, NEW.MovieID);
+	CALL AccountExistsBeforeOrder (NEW.AccountID, NEW.OrderID);
+	CALL EmployeeExistsBeforeOrder(NEW.EmployeeID, NEW.OrderID);
 END;
 $$
 DELIMITER ;
@@ -178,17 +193,19 @@ DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER Rental_PostUpdate_Checks AFTER UPDATE ON Rental
 FOR EACH ROW BEGIN
-	CALL DeleteFromQueue(NEW.ReturnDate, NEW.AccountID, NEW.MovieID);
+	CALL DeleteFromQueue(NEW.AccountID, NEW.MovieID, NEW.OrderID);
 END;
 $$
 DELIMITER ;
+
+
 
 
 # Pre-INSERT trigger for Queued:
 DELIMITER $$
 CREATE TRIGGER Queued_PreInsert_Checks BEFORE INSERT ON Queued
 FOR EACH ROW BEGIN
-	CALL CustomerExistsBeforeQueue(NEW.AccountID, NEW.DateAdded);
+	CALL AccountExistsBeforeQueue(NEW.AccountID, NEW.DateAdded);
 END;
 $$
 DELIMITER ;
@@ -196,10 +213,31 @@ DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER Queued_PreUpdate_Checks BEFORE UPDATE ON Queued
 FOR EACH ROW BEGIN
-	CALL CustomerExistsBeforeQueue(NEW.AccountID, NEW.DateAdded);
+	CALL AccountExistsBeforeQueue(NEW.AccountID, NEW.DateAdded);
 END;
 $$
 DELIMITER ;
+
+
+
+
+# Pre-UPDATE trigger for _Order:
+DELIMITER $$
+CREATE TRIGGER Order_PreUpdate_Checks BEFORE UPDATE ON _Order
+FOR EACH ROW BEGIN
+	CALL CantReturnBeforeRenting(NEW.OrderDate, NEW.ReturnDate);
+END;
+$$
+DELIMITER ;
+# Pre-INSERT trigger for _Order:
+DELIMITER $$
+CREATE TRIGGER Order_PreInsert_Checks BEFORE INSERT ON _Order
+FOR EACH ROW BEGIN
+	CALL CantReturnBeforeRenting(NEW.OrderDate, NEW.ReturnDate);
+END;
+$$
+DELIMITER ;
+
 
 
 

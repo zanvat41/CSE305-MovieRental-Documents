@@ -44,7 +44,7 @@ CREATE TABLE Customer ( # IsA Person
 	FOREIGN KEY (ID) REFERENCES Person(ID)
 		ON DELETE CASCADE
 		ON UPDATE CASCADE,
-	UNIQUE KEY (Email), # Don't allow multiple accounts tied to the same email address
+	# UNIQUE KEY (Email), # Don't allow multiple accounts tied to the same email address	# EDIT: or they can? Part1 solution says customers can have multiple accounts
 	CONSTRAINT chk_ID CHECK (ID RLIKE '^[0-9]{9}$'),  # Check that AccountID is formatted as 9 numbers
 	CONSTRAINT chk_Rating CHECK (Rating IN (1, 2, 3, 4, 5)),
 	CONSTRAINT chk_Email CHECK (Email LIKE '%_@_%._%'), # The '%' char checks for 0 or more chars; '_' checks for exactly 1 character
@@ -67,7 +67,7 @@ CREATE TABLE Account (
 CREATE TABLE Employee ( # IsA Person
 	SSN CHAR(9), # References Person(ID)
 	StartDate DATE,	# Start of employment
-	# Type ENUM('Manager','Customer Rep'),	# @TODO: Do we need to implement this attribute or is it all determined by permissions?
+	# Position ENUM('Manager','Customer Rep'),	# @TODO: Do we need to implement this attribute or is it all determined by permissions?
 	HourlyRate FLOAT NOT NULL DEFAULT 20.00,
 	PRIMARY KEY (SSN),
 	FOREIGN KEY (SSN) REFERENCES Person(ID)
@@ -75,8 +75,8 @@ CREATE TABLE Employee ( # IsA Person
 		ON UPDATE CASCADE,
 	CONSTRAINT chk_Pay CHECK (HourlyRate >= 9.00), # Make sure employees don't get paid below minimum wage @TODO: make min wage a constant?
 	CONSTRAINT chk_SSN CHECK (SSN RLIKE '^[0-9]{9}$') # Check that SSN is formatted as 9 numbers
-	# @TODO: On Employee INSERT/UPDATE, if SSN conflicts with some customer's account ID, change customer ID
-	# @TODO: On Employee INSERT, grant permissions to determine whether the user is a customer rep or manager
+	# @TODO: On Employee INSERT/UPDATE, if SSN conflicts with some customer's account ID, change customer ID (?)
+	# @TODO: On Employee INSERT, grant permissions to determine whether the user is a customer rep or manager (?)
 	# @TODO: Make sure there is always at least 1 manager
 );
 
@@ -109,6 +109,15 @@ CREATE TABLE Actor (
 	CONSTRAINT chk_Age CHECK (Age >= 0)
 );
 
+CREATE TABLE _Order (	# Apparently "Order" is a MySQL keyword...
+	ID INT,
+	OrderDate DATETIME NOT NULL,		# DATETIMEs are formatted like so: '2000-12-31 23:59:59'
+	ReturnDate DATETIME DEFAULT NULL,
+	PRIMARY KEY (ID),
+	CONSTRAINT chk_ID CHECK (ID >= 0),
+	CONSTRAINT chk_Dates CHECK (ReturnDate >= OrderDate)
+);
+
 
 
 
@@ -124,9 +133,10 @@ CREATE TABLE Rental (
 	AccountID INT,
 	MovieID INT,
 	EmployeeID CHAR(9),
-	OrderDate DATETIME NOT NULL, # DATETIMEs are formatted like so: '2000-12-31 23:59:59'
-	ReturnDate DATETIME DEFAULT NULL,
-	PRIMARY KEY (OrderID),
+	PRIMARY KEY (OrderID, AccountID, MovieID, EmployeeID),
+	FOREIGN KEY (OrderID) REFERENCES _Order(ID)
+		ON DELETE NO ACTION
+		ON UPDATE CASCADE,
 	FOREIGN KEY (AccountID) REFERENCES Account(ID)
 		ON DELETE NO ACTION		# Grader correction from part 1
 		ON UPDATE CASCADE,
@@ -136,10 +146,8 @@ CREATE TABLE Rental (
 	FOREIGN KEY (EmployeeID) REFERENCES Employee(SSN)
 		ON DELETE NO ACTION		# Grader correction from part 1
 		ON UPDATE CASCADE,
-	UNIQUE KEY (AccountID, MovieID, OrderDate), # Can't rent multiple copies of the same movie at the same time
 	CONSTRAINT chk_EmployeeID CHECK (EmployeeID RLIKE '^[0-9]{9}$')
-	# @TODO: Trigger to make sure ReturnDate is after OrderDate
-	# @TODO: Use VIEWs to determine which movies a customer has out and how many copies of a movie are available
+	# @TODO: Each Order can only have 1 Rental associated with it
 );
 
 
@@ -190,14 +198,14 @@ CREATE VIEW MovieQueue (AccountID, MovieID, Title, DateAdded) AS (
 # List of all movies each customer has rented:
 CREATE VIEW RentalHistory (AccountID, MovieID, Title, Genre, Rating, OrderDate, ReturnDate) AS (
 	SELECT AccountID, MovieID, Title, Genre, Movie.Rating, OrderDate, ReturnDate
-	FROM Rental JOIN Movie ON (MovieID = ID)
+	FROM (Rental JOIN _Order ON OrderID = _Order.ID) JOIN Movie ON (MovieID = Movie.ID)
 	ORDER BY OrderDate DESC
 );
 
 # List of movies that customers currently have loaned:
 CREATE VIEW CurrentLoans (AccountID, MovieID, Title, OrderDate) AS (
 	SELECT AccountID, MovieID, Title, OrderDate
-	FROM Rental JOIN Movie ON (MovieID = ID)
+	FROM (Rental JOIN _Order ON OrderID = _Order.ID) JOIN Movie ON (MovieID = Movie.ID)
 	WHERE ReturnDate = NULL
 );
 
@@ -215,12 +223,30 @@ CREATE VIEW Roles (ActorID, MovieID, Title, Genre, MovieRating) AS (
 
 # List of the number of copies available for each movie:
 CREATE VIEW AvailableCopies (MovieID, Copies) AS (
-	SELECT R.MovieID, M.TotalCopies - COUNT(*)
-	FROM Rental R JOIN Movie M ON (R.MovieID = M.ID)
-	WHERE R.ReturnDate = NULL
-	GROUP BY R.MovieID
+	SELECT MovieID, TotalCopies - COUNT(*)
+	FROM (Rental JOIN _Order ON OrderID = _Order.ID) JOIN Movie ON (MovieID = Movie.ID)
+	WHERE ReturnDate = NULL
+	GROUP BY MovieID
+);
+
+# List of movies each customer has out:
+CREATE VIEW CurrentRentals (AccountID, MovieID, Title, OrderDate) AS (
+	SELECT AccountID, MovieID, Title, OrderDate
+	FROM (Rental JOIN _Order ON OrderID = _Order.ID) JOIN Movie ON (MovieID = Movie.ID)
+	WHERE ReturnDate = NULL
+	ORDER BY OrderDate ASC
+);
+
+CREATE VIEW Invoice (OrderID, AccountID, OrderDate, ReturnDate, MovieID) AS (
+	SELECT OrderID, AccountID, OrderDate, ReturnDate, MovieID
+	FROM Rental JOIN _Order ON (OrderID = ID)
 );
 
 # @TODO: Other views:
-
+# Full name
+# List name (last, first)
+# Formatted phone/cc/ssn/
+# Full address
+# Formatted money
+# Invoice
 
