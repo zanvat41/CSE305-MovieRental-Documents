@@ -155,6 +155,27 @@ $$
 DELIMITER ;
 
 
+# Make sure there is always at least 1 manager:
+DELIMITER $$
+CREATE PROCEDURE ManagerExistsOnUpdate (IN New_EmployeeID CHAR(9), New_Position ENUM('Manager', 'Customer Rep'), Old_Position ENUM('Manager', 'Customer Rep')) # @TODO: Test and fix this procedure
+BEGIN
+	IF	('Manager' != New_Position) AND ('Manager' = Old_Position)
+		AND NOT EXISTS 	(SELECT COUNT(*)
+						FROM Employee E
+						WHERE E.SSN != New_EmployeeID AND E.Position = 'Manager')
+			
+	THEN
+		SIGNAL SQLSTATE 'E1991'
+            SET MESSAGE_TEXT = 'Staff conflict: Company requires at least 1 employee to retain \'Manager\' status at all times.';
+	END IF;
+END;
+$$
+DELIMITER ;
+
+
+
+
+
 ############################
 ##########Triggers##########
 ############################
@@ -234,6 +255,18 @@ DELIMITER $$
 CREATE TRIGGER Order_PreInsert_Checks BEFORE INSERT ON _Order
 FOR EACH ROW BEGIN
 	CALL CantReturnBeforeRenting(NEW.OrderDate, NEW.ReturnDate);
+END;
+$$
+DELIMITER ;
+
+
+
+
+# Pre-UPDATE trigger for Employee:
+DELIMITER $$
+CREATE TRIGGER Employee_PreUpdate_Checks BEFORE UPDATE ON Employee
+FOR EACH ROW BEGIN
+	CALL ManagerExistsOnUpdate(NEW.SSN, NEW.Position, OLD.Position);
 END;
 $$
 DELIMITER ;
