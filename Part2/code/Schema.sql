@@ -123,20 +123,21 @@ CREATE TABLE Rental (
 	OrderID INT,
 	AccountID INT,
 	MovieID INT,
-	EmployeeID INT,
+	EmployeeID CHAR(9),
 	OrderDate DATETIME NOT NULL, # DATETIMEs are formatted like so: '2000-12-31 23:59:59'
-	ReturnDate DATETIME,
+	ReturnDate DATETIME DEFAULT NULL,
 	PRIMARY KEY (OrderID),
-	FOREIGN KEY (CustomerID) REFERENCES Customer(AccountID)
+	FOREIGN KEY (AccountID) REFERENCES Account(ID)
 		ON DELETE NO ACTION		# Grader correction from part 1
 		ON UPDATE CASCADE,
 	FOREIGN KEY (MovieID) REFERENCES Movie(ID)
 		ON DELETE NO ACTION		# Grader correction from part 1
 		ON UPDATE CASCADE,
-	FOREIGN KEY (EmployeeID) REFERENCES Employee(ID)
+	FOREIGN KEY (EmployeeID) REFERENCES Employee(SSN)
 		ON DELETE NO ACTION		# Grader correction from part 1
 		ON UPDATE CASCADE,
-	UNIQUE KEY (CustomerID, MovieID, OrderDate) # Can't rent multiple copies of the same movie at the same time
+	UNIQUE KEY (AccountID, MovieID, OrderDate), # Can't rent multiple copies of the same movie at the same time
+	CONSTRAINT chk_EmployeeID CHECK (EmployeeID RLIKE '^[0-9]{9}$')
 	# @TODO: Trigger to make sure ReturnDate is after OrderDate
 	# @TODO: Use VIEWs to determine which movies a customer has out and how many copies of a movie are available
 );
@@ -144,11 +145,11 @@ CREATE TABLE Rental (
 
 # Represents movies that users have added to their Movie Queue (aka Wishlist)
 CREATE TABLE Queued (
-	CustomerID INT,
+	AccountID INT,
 	MovieID INT,
 	DateAdded DATETIME,	# Used to sort movies in the queue
-	PRIMARY KEY (CustomerID, MovieID),
-	FOREIGN KEY (CustomerID) REFERENCES Customer(AccountID)
+	PRIMARY KEY (AccountID, MovieID),
+	FOREIGN KEY (AccountID) REFERENCES Account(ID)
 		ON DELETE CASCADE
 		ON UPDATE CASCADE,
 	FOREIGN KEY (MovieID) REFERENCES Movie(ID)
@@ -179,36 +180,47 @@ CREATE TABLE Casted (
 #########Views#########
 #######################
 
-CREATE VIEW MovieQueue (CustomerID, MovieID, DateAdded) AS (
-	SELECT CustomerID, MovieID, DateAdded
-	FROM Queued JOIN Customer ON (CustomerID = AccountID)
+# List of movies currently in customer movie queues:
+CREATE VIEW MovieQueue (AccountID, MovieID, Title, DateAdded) AS (
+	SELECT AccountID, MovieID, Title, DateAdded
+	FROM Queued JOIN Movie ON (MovieID = ID)
 	ORDER BY DateAdded ASC
 );
 
-CREATE VIEW RentalHistory (CustomerID, MovieID, Title, Genre, Rating, OrderDate, LoanStatus) AS (
-	SELECT CustomerID, MovieID, Title, Genre, Movie.Rating, OrderDate, LoanStatus
+# List of all movies each customer has rented:
+CREATE VIEW RentalHistory (AccountID, MovieID, Title, Genre, Rating, OrderDate, ReturnDate) AS (
+	SELECT AccountID, MovieID, Title, Genre, Movie.Rating, OrderDate, ReturnDate
 	FROM Rental JOIN Movie ON (MovieID = ID)
 	ORDER BY OrderDate DESC
 );
 
 # List of movies that customers currently have loaned:
-CREATE VIEW CurrentLoans (CustomerID, MovieID, Title, OrderDate) AS (
-	SELECT CustomerID, MovieID, Title, OrderDate
+CREATE VIEW CurrentLoans (AccountID, MovieID, Title, OrderDate) AS (
+	SELECT AccountID, MovieID, Title, OrderDate
 	FROM Rental JOIN Movie ON (MovieID = ID)
-	WHERE LoanStatus = 'Active'
+	WHERE ReturnDate = NULL
 );
 
-#A list of all actors casted in each movie
+# List of all actors casted in each movie:
 CREATE VIEW CastList (MovieID, ActorID, FirstName, LastName, Gender, Age, ActorRating) AS (
 	SELECT MovieID, ActorID, FirstName, LastName, Gender, Age, Actor.Rating
 	FROM (Actor JOIN Casted ON (Actor.ID = ActorID)) JOIN Movie ON (MovieID = Movie.ID)
 );
 
-#A list of all movies each actor has been in
+# List of all movies each actor has been in:
 CREATE VIEW Roles (ActorID, MovieID, Title, Genre, MovieRating) AS (
 	SELECT ActorID, MovieID, Title, Genre, Movie.Rating
 	FROM (Actor JOIN Casted ON (Actor.ID = ActorID)) JOIN Movie ON (MovieID = Movie.ID)
 );
 
-# @TODO: Other views?
+# List of the number of copies available for each movie:
+CREATE VIEW AvailableCopies (MovieID, Copies) AS (
+	SELECT R.MovieID, M.TotalCopies - COUNT(*)
+	FROM Rental R JOIN Movie M ON (R.MovieID = M.ID)
+	WHERE R.ReturnDate = NULL
+	GROUP BY R.MovieID
+);
+
+# @TODO: Other views:
+
 

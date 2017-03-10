@@ -63,18 +63,34 @@ $$
 DELIMITER ;
 
 
-# Checks that customer isn't renting 2 copies of the same movie at the same time:	# @TODO: Edit this procedure to accomodate new schema
+# Checks that an order's OrderDate precedes the ReturnDate:
+DELIMITER $$
+CREATE PROCEDURE CantReturnBeforeRenting (IN New_OrderID INT, New_OrderDate DATETIME, New_ReturnDate DATETIME)
+BEGIN
+	IF	 (New_ReturnDate != NULL) AND
+		New_ReturnDate < New_OrderDate
+	THEN 
+		SIGNAL SQLSTATE 'E0451'
+            SET MESSAGE_TEXT = 'Date conflict: Date of return precedes date when order was placed.';
+    END IF;
+END;
+$$
+DELIMITER ;
+
+
+# Checks that customer isn't renting 2 copies of the same movie at the same time:
 DELIMITER $$
 CREATE PROCEDURE CantHaveTwoCopies (
-	IN New_LoanStatus ENUM('Expired', 'Active'), New_CustomerID INT, New_MovieID INT)
+	IN New_OrderID INT, New_ReturnDate DATETIME, New_CustomerID INT, New_MovieID INT)
 BEGIN
-	IF 	New_LoanStatus = 'Active' AND
-		1 <= (SELECT COUNT(*)
+	IF 	New_ReturnDate = NULL AND
+		EXISTS (SELECT *
 			FROM Rental R1
 			WHERE
 				New_CustomerID = R1.CustomerID AND
 				New_MovieID = R1.MovieID AND
-				R1.LoanStatus = 'Active'
+				R1.ReturnDate = NULL AND
+				New_OrderID != R1.OrderID
 		)
 	THEN 
 		SIGNAL SQLSTATE 'E0928'
@@ -85,15 +101,22 @@ $$
 DELIMITER ;
 
 
-# Checks that customer can't rent a movie if no copies are available:	# @TODO: Rewrite this procedure to accomodate new schema
+# Checks that customer can't rent a movie if no copies are available:
 DELIMITER $$
-CREATE PROCEDURE CantRentUnavailable (IN New_MovieID INT, New_LoanStatus ENUM('Expired', 'Active'))
+CREATE PROCEDURE CantRentUnavailable (IN New_OrderID INT, New_MovieID INT, New_ReturnDate DATETIME)
 BEGIN
-	IF 	New_LoanStatus = 'Active' AND
-		1 > (SELECT AvailableCopies
-			FROM Movie M
-			WHERE New_MovieID = M.ID
-		)
+	IF 	New_ReturnDate = NULL AND (
+			(SELECT TotalCopies
+			FROM Movie
+			WHERE MovieID = New_MovieID
+			)
+		 	<=
+		 	(SELECT COUNT(*)
+			FROM Rental R
+			WHERE New_MovieID = R.MovieID AND
+			R.ReturnDate = NULL AND
+			New_OrderID != R.OrderID
+			))
 	THEN 
 		SIGNAL SQLSTATE 'E0928'
             SET MESSAGE_TEXT = 'Rental conflict: There are no available copies of this movie.';
@@ -103,21 +126,13 @@ $$
 DELIMITER ;
 
 
-# If a movie is rented and not expired, delete from Queued:			# @TODO: Edit this procedure to accomodate new schema
+# If a movie is rented and not expired, delete from Queued:
 DELIMITER $$
-CREATE PROCEDURE DeleteFromQueue (IN New_LoanStatus ENUM('Expired', 'Active'), New_CustomerID INT, New_MovieID INT)
+CREATE PROCEDURE DeleteFromQueue (IN New_ReturnDate DATETIME, New_CustomerID INT, New_MovieID INT)
 BEGIN
-	IF 	New_LoanStatus = 'Active' AND
-		1 = (SELECT COUNT(*)
-			FROM QUEUED Q
-			WHERE New_MovieID = Q.MovieID AND
-				New_CustomerID = Q.CustomerID
-		)
-	THEN 
 		DELETE FROM QUEUED 
 		WHERE MovieID = New_MovieID AND
 			CustomerID = New_CustomerID;
-    END IF;
 END;
 $$
 DELIMITER ;
@@ -131,10 +146,11 @@ DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER Rental_PreInsert_Checks BEFORE INSERT ON Rental
 FOR EACH ROW BEGIN
-	CALL CantRentUnavailable(NEW.MovieID, NEW.LoanStatus);
-	CALL CantHaveTwoCopies(NEW.LoanStatus, NEW.CustomerID, NEW.MovieID);
-	CALL CustomerExistsBeforeOrder (NEW.CustomerID, NEW.OrderDate);
+	CALL CantRentUnavailable(NEW.OrderID, NEW.MovieID, NEW.ReturnDate);
+	CALL CantHaveTwoCopies(NEW.OrderID, NEW.ReturnDate, NEW.AccountID, NEW.MovieID);
+	CALL CustomerExistsBeforeOrder (NEW.AccountID, NEW.OrderDate);
 	CALL EmployeeExistsBeforeOrder(NEW.EmployeeID, NEW.OrderDate);
+	CALL CantReturnBeforeRenting(NEW.OrderID, NEW.OrderDate, NEW.ReturnDate);
 END;
 $$
 DELIMITER ;
@@ -142,7 +158,7 @@ DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER Rental_PostInsert_Checks AFTER INSERT ON Rental
 FOR EACH ROW BEGIN
-	CALL DeleteFromQueue(NEW.LoanStatus, NEW.CustomerID, NEW.MovieID);
+	CALL DeleteFromQueue(NEW.ReturnDate, NEW.AccountID, NEW.MovieID);
 END;
 $$
 DELIMITER ;
@@ -150,10 +166,11 @@ DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER Rental_PreUpdate_Checks BEFORE UPDATE ON Rental
 FOR EACH ROW BEGIN
-	CALL CantRentUnavailable(NEW.MovieID, NEW.LoanStatus);
-	CALL CantHaveTwoCopies(NEW.LoanStatus, NEW.CustomerID, NEW.MovieID);
-	CALL CustomerExistsBeforeOrder (NEW.CustomerID, NEW.OrderDate);
+	CALL CantRentUnavailable(NEW.OrderID, NEW.MovieID, NEW.ReturnDate);
+	CALL CantHaveTwoCopies(NEW.OrderID, NEW.ReturnDate, NEW.AccountID, NEW.MovieID);
+	CALL CustomerExistsBeforeOrder (NEW.AccountID, NEW.OrderDate);
 	CALL EmployeeExistsBeforeOrder(NEW.EmployeeID, NEW.OrderDate);
+	CALL CantReturnBeforeRenting(NEW.OrderID, NEW.OrderDate, NEW.ReturnDate);
 END;
 $$
 DELIMITER ;
@@ -161,7 +178,7 @@ DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER Rental_PostUpdate_Checks AFTER UPDATE ON Rental
 FOR EACH ROW BEGIN
-	CALL DeleteFromQueue(NEW.LoanStatus, NEW.CustomerID, NEW.MovieID);
+	CALL DeleteFromQueue(NEW.ReturnDate, NEW.AccountID, NEW.MovieID);
 END;
 $$
 DELIMITER ;
@@ -171,7 +188,7 @@ DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER Queued_PreInsert_Checks BEFORE INSERT ON Queued
 FOR EACH ROW BEGIN
-	CALL CustomerExistsBeforeQueue(NEW.CustomerID, NEW.DateAdded);
+	CALL CustomerExistsBeforeQueue(NEW.AccountID, NEW.DateAdded);
 END;
 $$
 DELIMITER ;
@@ -179,7 +196,7 @@ DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER Queued_PreUpdate_Checks BEFORE UPDATE ON Queued
 FOR EACH ROW BEGIN
-	CALL CustomerExistsBeforeQueue(NEW.CustomerID, NEW.DateAdded);
+	CALL CustomerExistsBeforeQueue(NEW.AccountID, NEW.DateAdded);
 END;
 $$
 DELIMITER ;
