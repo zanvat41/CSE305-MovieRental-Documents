@@ -54,7 +54,7 @@ CREATE TABLE Customer ( # IsA Person
 CREATE TABLE Account (
 	ID INT,
 	CustomerID CHAR(9) NOT NULL,	# Account has participation constraint and must belong to a customer (HasAccount relationship)
-	Type ENUM('Limited', 'Unlimited', 'Unlimited+', 'Unlimited++') NOT NULL DEFAULT 'Limited', # ENUM Domain
+	Subscription ENUM('Limited', 'Unlimited', 'Unlimited+', 'Unlimited++') NOT NULL DEFAULT 'Limited', # ENUM Domain
 	Created DATE,		# DATEs are formatted like so: '2000-12-31'
 	PRIMARY KEY (ID),
 	FOREIGN KEY (CustomerID) REFERENCES Customer(ID)
