@@ -51,16 +51,16 @@ VALUES ('444444444', 'pml@cs.sunysb.edu', '6789234567892345', 1); # Lewis Philli
 INSERT INTO Person (ID, LastName, FirstName, Address, City, State, Zip, Phone)
 VALUES ('123456789', 'Smith', 'David', '123 College road',  'Stony Brook', 'NY', '11790', '5162152345');
 
-INSERT INTO Employee (SSN, StartDate, HourlyRate)
-VALUES ('123456789', '2005-11-01', 60.00); # David Smith
+INSERT INTO Employee (SSN, StartDate, Position, HourlyRate)
+VALUES ('123456789', '2005-11-01', 'Customer Rep', 60.00); # David Smith
 
 
 
 INSERT INTO Person (ID, LastName, FirstName, Address, City, State, Zip, Phone)
-VALUES ('789123456', 'Warren', 'David', '456 Sunken Street',  'Stony Brook', 'NY', '11794', '6316329987');
+VALUES ('789123456', 'Warren', 'David', '456 Sunken Street',  'Stony Brook', 'NY', '11794', '6316329987'); # Manager
 
-INSERT INTO Employee (SSN, StartDate, HourlyRate)
-VALUES ('789123456', '2006-02-02', 50.00); # David Warren
+INSERT INTO Employee (SSN, StartDate, Position, HourlyRate)
+VALUES ('789123456', '2006-02-02', 'Manager', 50.00); # David Warren (Manager)
 
 
 
