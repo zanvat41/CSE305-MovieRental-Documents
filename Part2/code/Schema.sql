@@ -67,7 +67,7 @@ CREATE TABLE Account (
 CREATE TABLE Employee ( # IsA Person
 	SSN CHAR(9), # References Person(ID)
 	StartDate DATE,	# Start of employment
-	# Position ENUM('Manager','Customer Rep'),	# @TODO: Do we need to implement this attribute or is it all determined by permissions?
+	Position ENUM('Manager', 'Customer Rep'),	# @TODO: Do we need to implement this attribute or is it all determined by permissions?
 	HourlyRate FLOAT NOT NULL DEFAULT 20.00,
 	PRIMARY KEY (SSN),
 	FOREIGN KEY (SSN) REFERENCES Person(ID)
@@ -181,72 +181,4 @@ CREATE TABLE Casted (
 		ON UPDATE CASCADE
 	# Moved actor rating back to Actor table because part 1 solution specifies it that way
 );
-
-
-
-#######################
-#########Views#########
-#######################
-
-# List of movies currently in customer movie queues:
-CREATE VIEW MovieQueue (AccountID, MovieID, Title, DateAdded) AS (
-	SELECT AccountID, MovieID, Title, DateAdded
-	FROM Queued JOIN Movie ON (MovieID = ID)
-	ORDER BY DateAdded ASC
-);
-
-# List of all movies each customer has rented:
-CREATE VIEW RentalHistory (AccountID, MovieID, Title, Genre, Rating, OrderDate, ReturnDate) AS (
-	SELECT AccountID, MovieID, Title, Genre, Movie.Rating, OrderDate, ReturnDate
-	FROM (Rental JOIN _Order ON OrderID = _Order.ID) JOIN Movie ON (MovieID = Movie.ID)
-	ORDER BY OrderDate DESC
-);
-
-# List of movies that customers currently have loaned:
-CREATE VIEW CurrentLoans (AccountID, MovieID, Title, OrderDate) AS (
-	SELECT AccountID, MovieID, Title, OrderDate
-	FROM (Rental JOIN _Order ON OrderID = _Order.ID) JOIN Movie ON (MovieID = Movie.ID)
-	WHERE ReturnDate = NULL
-);
-
-# List of all actors casted in each movie:
-CREATE VIEW CastList (MovieID, ActorID, FirstName, LastName, Gender, Age, ActorRating) AS (
-	SELECT MovieID, ActorID, FirstName, LastName, Gender, Age, Actor.Rating
-	FROM (Actor JOIN Casted ON (Actor.ID = ActorID)) JOIN Movie ON (MovieID = Movie.ID)
-);
-
-# List of all movies each actor has been in:
-CREATE VIEW Roles (ActorID, MovieID, Title, Genre, MovieRating) AS (
-	SELECT ActorID, MovieID, Title, Genre, Movie.Rating
-	FROM (Actor JOIN Casted ON (Actor.ID = ActorID)) JOIN Movie ON (MovieID = Movie.ID)
-);
-
-# List of the number of copies available for each movie:
-CREATE VIEW AvailableCopies (MovieID, Copies) AS (
-	SELECT MovieID, TotalCopies - COUNT(*)
-	FROM (Rental JOIN _Order ON OrderID = _Order.ID) JOIN Movie ON (MovieID = Movie.ID)
-	WHERE ReturnDate = NULL
-	GROUP BY MovieID
-);
-
-# List of movies each customer has out:
-CREATE VIEW CurrentRentals (AccountID, MovieID, Title, OrderDate) AS (
-	SELECT AccountID, MovieID, Title, OrderDate
-	FROM (Rental JOIN _Order ON OrderID = _Order.ID) JOIN Movie ON (MovieID = Movie.ID)
-	WHERE ReturnDate = NULL
-	ORDER BY OrderDate ASC
-);
-
-CREATE VIEW Invoice (OrderID, AccountID, OrderDate, ReturnDate, MovieID) AS (
-	SELECT OrderID, AccountID, OrderDate, ReturnDate, MovieID
-	FROM Rental JOIN _Order ON (OrderID = ID)
-);
-
-# @TODO: Other views:
-# Full name
-# List name (last, first)
-# Formatted phone/cc/ssn/
-# Full address
-# Formatted money
-# Invoice
 
