@@ -157,12 +157,29 @@ DELIMITER ;
 
 # Make sure there is always at least 1 manager:
 DELIMITER $$
-CREATE PROCEDURE ManagerExistsOnUpdate (IN New_EmployeeID CHAR(9), New_Position ENUM('Manager', 'Customer Rep'), Old_Position ENUM('Manager', 'Customer Rep')) # @TODO: Test and fix this procedure
+CREATE PROCEDURE ManagerExistsOnUpdate (IN Old_EmployeeID CHAR(9), New_Position ENUM('Manager', 'Customer Rep'), Old_Position ENUM('Manager', 'Customer Rep'))  # @TODO: Add this procedure/trigger for Person (with extra check that the person is a manager)
 BEGIN
 	IF	('Manager' != New_Position) AND ('Manager' = Old_Position)
-		AND NOT EXISTS 	(SELECT COUNT(*)
+		AND NOT EXISTS 	(SELECT *
 						FROM Employee E
-						WHERE E.SSN != New_EmployeeID AND E.Position = 'Manager')
+						WHERE E.SSN != Old_EmployeeID AND E.Position = 'Manager')
+			
+	THEN
+		SIGNAL SQLSTATE 'E1991'
+            SET MESSAGE_TEXT = 'Staff conflict: Company requires at least 1 employee to retain \'Manager\' status at all times.';
+	END IF;
+END;
+$$
+DELIMITER ;
+
+# Make sure there is always at least 1 manager:
+DELIMITER $$
+CREATE PROCEDURE ManagerExistsOnDelete (IN EmployeeID CHAR(9), Pos ENUM('Manager', 'Customer Rep')) # @TODO: Add this procedure/trigger for Person (with extra check that the person is a manager)
+BEGIN
+	IF	('Manager' = Pos) AND
+		NOT EXISTS 	(SELECT *
+						FROM Employee E
+						WHERE E.SSN != EmployeeID AND E.Position = 'Manager')
 			
 	THEN
 		SIGNAL SQLSTATE 'E1991'
@@ -266,7 +283,15 @@ DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER Employee_PreUpdate_Checks BEFORE UPDATE ON Employee
 FOR EACH ROW BEGIN
-	CALL ManagerExistsOnUpdate(NEW.SSN, NEW.Position, OLD.Position);
+	CALL ManagerExistsOnUpdate(OLD.SSN, NEW.Position, OLD.Position);
+END;
+$$
+DELIMITER ;
+# Pre-DELETE trigger for Employee:
+DELIMITER $$
+CREATE TRIGGER Employee_PreDelete_Checks BEFORE DELETE ON Employee
+FOR EACH ROW BEGIN
+	CALL ManagerExistsOnDelete(OLD.SSN, OLD.Position);
 END;
 $$
 DELIMITER ;
