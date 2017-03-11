@@ -6,6 +6,8 @@
 # Database Schema - Entities & Relationships
 
 # @TODO: Add triggers/procedures for each constraint in this schema (constraints parsed but not supported by MySQL)
+# @TODO: Use the AUTO_INCREMENT keyword for numeric primary keys (for more info, see: https://dev.mysql.com/doc/refman/5.7/en/example-auto-increment.html )
+# @TODO: Use INT(9) UNSIGNED ZEROFILL AUTO_INCREMENT for SSNs and BIGINT(16) UNSIGNED ZEROFILL AUTO_INCREMENT for CCs instead of CHAR arrays
 
 ##########################
 ######Entity Tables#######
