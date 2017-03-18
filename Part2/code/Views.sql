@@ -14,22 +14,23 @@
 
 
 ###### Manager-Level Views ######
+# (Used for Manager-level transactions)
 
 # Obtain a sales report (i.e. the overall income from all active subscriptions) for a particular month:
-CREATE VIEW SalesReport (AccountID, AccountType, Income) AS (
-	SELECT A1.ID, A1.Subscription, 0.00
+CREATE VIEW SalesReport (AccountID, AccountType, AccountCreated, Income) AS (
+	SELECT A1.ID, A1.Subscription, A1.Created, 0.00
     FROM Account A1
     WHERE A1.Subscription = 'Limited')
     UNION
-    (SELECT A2.ID, A2.Subscription, 5.00
+    (SELECT A2.ID, A2.Subscription, A2.Created, 5.00
     FROM Account A2
     WHERE A2.Subscription = 'Unlimited')
     UNION
-    (SELECT A3.ID, A3.Subscription, 10.00
+    (SELECT A3.ID, A3.Subscription, A3.Created, 10.00
     FROM Account A3
     WHERE A3.Subscription = 'Unlimited+')
     UNION
-    (SELECT A4.ID, A4.Subscription, 15.00
+    (SELECT A4.ID, A4.Subscription, A4.Created, 15.00
     FROM Account A4
     WHERE A4.Subscription = 'Unlimited++'
 );
@@ -88,6 +89,7 @@ CREATE VIEW PopularMovies (RentalCount, MovieID, Title) AS (
 
 
 ###### Customer Representative-Level Views ######
+# (Used for Customer Rep-level transactions)
 
 # Produce customer mailing lists:
 CREATE VIEW MailingList (AccountID, CustomerID, CustomerName, Email, Subscription) AS (
@@ -102,6 +104,7 @@ CREATE VIEW MailingList (AccountID, CustomerID, CustomerName, Email, Subscriptio
 
 
 ###### Customer-Level Views ######
+# (Used for Customer-level transactions)
 
 # @TODO: Customer-level views
 
