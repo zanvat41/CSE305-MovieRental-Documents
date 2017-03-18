@@ -55,6 +55,7 @@ CREATE TABLE Account (
 	FOREIGN KEY (CustomerID) REFERENCES Customer(ID)
 		ON DELETE NO ACTION
 		ON UPDATE CASCADE
+	# @TODO: If account creation date is NULL on insert, make Created=CURDATE()
 );
 
 CREATE TABLE Employee ( # IsA Person
@@ -146,6 +147,7 @@ CREATE TABLE Queued (
 	FOREIGN KEY (MovieID) REFERENCES Movie(ID)
 		ON DELETE CASCADE
 		ON UPDATE CASCADE
+	# @TODO: If queued time is NULL on insert, make DateAdded=NOW()
 );
 
 
