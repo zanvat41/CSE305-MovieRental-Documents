@@ -14,7 +14,7 @@
 
 # Checks that an employee began working before they helped with an order:
 DELIMITER $$
-CREATE PROCEDURE EmployeeExistsBeforeOrder (IN New_EmployeeID CHAR(9), New_OrderID INT)
+CREATE PROCEDURE EmployeeExistsBeforeOrder (IN New_EmployeeID INT(9) UNSIGNED ZEROFILL, New_OrderID INT UNSIGNED)
 BEGIN
 	IF (SELECT DATE(OrderDate)
 		FROM _Order
@@ -35,7 +35,7 @@ DELIMITER ;
 
 # Checks that a customer's account was created before they placed an order:
 DELIMITER $$
-CREATE PROCEDURE AccountExistsBeforeOrder (IN New_AccountID INT, New_OrderID INT)
+CREATE PROCEDURE AccountExistsBeforeOrder (IN New_AccountID INT UNSIGNED, New_OrderID INT UNSIGNED)
 BEGIN
 	IF  (SELECT DATE(OrderDate)
 		FROM _Order O
@@ -56,7 +56,7 @@ DELIMITER ;
 
 # Checks that an account was created before they put a movie in their queue:
 DELIMITER $$
-CREATE PROCEDURE AccountExistsBeforeQueue (IN New_AccountID INT, New_DateAdded DATETIME)
+CREATE PROCEDURE AccountExistsBeforeQueue (IN New_AccountID INT UNSIGNED, New_DateAdded DATETIME)
 BEGIN
 	IF DATE(New_DateAdded) < (SELECT A.Created
 			FROM Account A
@@ -89,7 +89,7 @@ DELIMITER ;
 # Checks that an account isn't renting 2 copies of the same movie at the same time:
 DELIMITER $$
 CREATE PROCEDURE CantHaveTwoCopies (
-	IN New_OrderID INT, New_AccountID INT, New_MovieID INT)
+	IN New_OrderID INT UNSIGNED, New_AccountID INT UNSIGNED, New_MovieID INT UNSIGNED)
 BEGIN
 	IF 	(NULL = (SELECT ReturnDate
 				FROM _Order O1
@@ -114,7 +114,7 @@ DELIMITER ;
 
 # Checks that customer can't rent a movie if no copies are available:
 DELIMITER $$
-CREATE PROCEDURE CantRentUnavailable (IN New_OrderID INT, New_MovieID INT)
+CREATE PROCEDURE CantRentUnavailable (IN New_OrderID INT UNSIGNED, New_MovieID INT UNSIGNED)
 BEGIN
 	IF 	(NULL = (SELECT O1.ReturnDate
 				FROM _Order O1
@@ -142,7 +142,7 @@ DELIMITER ;
 
 # If a movie is rented and not expired, delete from Queued:
 DELIMITER $$
-CREATE PROCEDURE DeleteFromQueue (IN New_AccountID INT, New_MovieID INT, New_OrderID INT) # @TODO: Delete this procedure? Can movies be queued while checked out?
+CREATE PROCEDURE DeleteFromQueue (IN New_AccountID INT UNSIGNED, New_MovieID INT UNSIGNED, New_OrderID INT UNSIGNED) # @TODO: Delete this procedure? Can movies be queued while checked out?
 BEGIN
 	IF	(NULL = (SELECT ReturnDate
 				FROM _Order
@@ -157,7 +157,7 @@ DELIMITER ;
 
 # Make sure there is always at least 1 manager:
 DELIMITER $$
-CREATE PROCEDURE ManagerExistsOnUpdate (IN Old_EmployeeID CHAR(9), New_Position ENUM('Manager', 'Customer Rep'), Old_Position ENUM('Manager', 'Customer Rep'))  # @TODO: Add this procedure/trigger for Person (with extra check that the person is a manager)
+CREATE PROCEDURE ManagerExistsOnUpdate (IN Old_EmployeeID INT(9) UNSIGNED ZEROFILL, New_Position ENUM('Manager', 'Customer Rep'), Old_Position ENUM('Manager', 'Customer Rep'))  # @TODO: Add this procedure/trigger for Person (with extra check that the person is a manager)
 BEGIN
 	IF	('Manager' != New_Position) AND ('Manager' = Old_Position)
 		AND NOT EXISTS 	(SELECT *
@@ -174,7 +174,7 @@ DELIMITER ;
 
 # Make sure there is always at least 1 manager:
 DELIMITER $$
-CREATE PROCEDURE ManagerExistsOnDelete (IN EmployeeID CHAR(9), Pos ENUM('Manager', 'Customer Rep')) # @TODO: Add this procedure/trigger for Person (with extra check that the person is a manager)
+CREATE PROCEDURE ManagerExistsOnDelete (IN EmployeeID INT(9) UNSIGNED ZEROFILL, Pos ENUM('Manager', 'Customer Rep')) # @TODO: Add this procedure/trigger for Person (with extra check that the person is a manager)
 BEGIN
 	IF	('Manager' = Pos) AND
 		NOT EXISTS 	(SELECT *
