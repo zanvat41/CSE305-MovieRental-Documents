@@ -100,7 +100,15 @@ CREATE VIEW MailingList (AccountID, CustomerID, CustomerName, Email, Subscriptio
 
 
 
-###### Other Views ######
+
+###### Customer-Level Views ######
+
+# @TODO: Customer-level views
+
+
+
+
+###### General Views ######
 
 # List of movies currently in customer movie queues:
 CREATE VIEW MovieQueue (AccountID, MovieID, Title, DateAdded) AS (
