@@ -11,6 +11,82 @@
 #########Views#########
 #######################
 
+
+
+###### Manager-Level Views ######
+
+# Obtain a sales report (i.e. the overall income from all active subscriptions) for a particular month:
+CREATE VIEW SalesReport (AccountID, AccountType, Income) AS (
+	SELECT A1.ID, A1.Subscription, 0.00
+    FROM Account A1
+    WHERE A1.Subscription = 'Limited')
+    UNION
+    (SELECT A2.ID, A2.Subscription, 5.00
+    FROM Account A2
+    WHERE A2.Subscription = 'Unlimited')
+    UNION
+    (SELECT A3.ID, A3.Subscription, 10.00
+    FROM Account A3
+    WHERE A3.Subscription = 'Unlimited+')
+    UNION
+    (SELECT A4.ID, A4.Subscription, 15.00
+    FROM Account A4
+    WHERE A4.Subscription = 'Unlimited++'
+);
+
+# Produce a list of movie rentals by movie name:
+CREATE VIEW RentalsByMovie (Title, OrderID, AccountID, EmployeeID, MovieID) AS (
+    SELECT M.Title, R.OrderID, R.AccountID, R.EmployeeID, R.MovieID
+    FROM Rental R JOIN Movie M ON (R.MovieID = M.ID)
+    # WHERE M.Title = 'Movie Title'   # When a manager uses this transaction, title needs to be specified
+);
+
+# Produce a list of movie rentals by customer name:
+CREATE VIEW RentalsByCustomer (CustomerName, OrderID, AccountID, EmployeeID, MovieID) AS (
+    SELECT P.FullName, R.OrderID, R.AccountID, R.EmployeeID, R.MovieID
+    FROM Rental R JOIN (SELECT ID, CONCAT(FirstName, ' ', LastName) FullName
+	                    FROM Person) P
+    # WHERE CustomerName='Customer Name'    # When a manager uses this transaction, customer's full name needs to be specified
+);
+
+# Produce a list of movie rentals by movie genre/type:
+CREATE VIEW RentalsByGenre (Genre, OrderID, AccountID, EmployeeID, MovieID) AS (
+	SELECT M.Genre, R.OrderID, R.AccountID, R.EmployeeID, R.MovieID
+	FROM Rental R JOIN Movie M ON (R.MovieID = M.ID)
+);
+
+# Determine which customer representative oversaw the most transactions (rentals):
+CREATE VIEW RepRentalCount (Count, SSN, FullName) AS (
+	SELECT C.RentalCount, E.SSN, P.FullName
+	FROM (Employee E JOIN (SELECT ID, CONCAT(FirstName, ' ', LastName) FullName
+						   FROM Person) P
+					 ON E.SSN = P.ID)
+					 JOIN (SELECT COUNT(*) RentalCount, R.EmployeeID ID
+					 	   FROM Rental R
+						   GROUP BY R.EmployeeID) C
+					 ON C.ID = E.SSN
+	ORDER BY C.RentalCount DESC		# The first entry in this view is the representative who helped with the most rentals
+);
+
+# Produce a list of most active customers:
+CREATE VIEW MostActiveCustomer (AccountID, CustomerID, Rating, JoinDate) AS (
+	SELECT A.ID, A.CustomerID, C.Rating, A.Created 
+	FROM Customer C JOIN Account A ON C.ID = A.CustomerID
+	ORDER BY A.CustomerID DESC, A.Created DESC		# Sort by customer rating
+);
+
+# Produce a list of most actively rented movies:
+CREATE VIEW PopularMovies (RentalCount, MovieID, Title) AS (
+	SELECT R.TotalRentals, M.ID, M.Title
+	FROM Movie M JOIN (SELECT COUNT(*) TotalRentals, MovieID
+					   FROM Rental
+					   GROUP BY MovieID) R ON M.ID = R.MovieID
+	ORDER BY R.TotalRentals DESC
+);
+
+
+###### Other Views ######
+
 # List of movies currently in customer movie queues:
 CREATE VIEW MovieQueue (AccountID, MovieID, Title, DateAdded) AS (
 	SELECT AccountID, MovieID, Title, DateAdded
@@ -123,12 +199,15 @@ CREATE VIEW CreditCardNum (CustomerID, CC) AS (
 	FROM Customer C
 );
 
+# A person's full home address:
 CREATE VIEW FullAddress(PersonID, FullAddr) AS (
 	SELECT P.ID, CONCAT(P.Address, '\n', P.City, ', ', P.State, ' ', P.Zip)
 	FROM Person P
 );
 
+# A person's mailing address (full name and full address):
 CREATE VIEW MailingAddress(PersonID, MailAddr) AS (
 	SELECT P.ID, CONCAT(P.FirstName, ' ', P.LastName, '\n', P.Address, '\n', P.City, ', ', P.State, ' ', P.Zip)
 	FROM Person P
 );
+
