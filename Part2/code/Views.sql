@@ -200,25 +200,25 @@ CREATE VIEW Wage (EmployeeID, Pay) AS (
 
 # Obtains phone numbers with the format: (000) 000-0000
 CREATE VIEW PhoneNumber (PersonID, Telephone) AS (
-	SELECT P.ID, INSERT(INSERT(INSERT(P.Phone, 1, 0, '('), 5, 0, ') '), 10, 0, '-')
+	SELECT P.ID, INSERT(INSERT(INSERT(CAST(P.Phone AS CHAR(10)), 1, 0, '('), 5, 0, ') '), 10, 0, '-')
 	FROM Person P
 );
 
 # Obtains phone numbers with the format: 000-000-0000
 CREATE VIEW PhoneNumber2 (PersonID, Telephone) AS (
-	SELECT P.ID, INSERT(INSERT(P.Phone, 4, 0, '-'), 8, 0, '-')
+	SELECT P.ID, INSERT(INSERT(CAST(P.Phone AS CHAR(10)), 4, 0, '-'), 8, 0, '-')
 	FROM Person P
 );
 
 # Obtains formatted SSN:
 CREATE VIEW SocialSecurity (PersonID, SSN) AS (
-	SELECT P.ID, INSERT(INSERT(P.ID, 4, 0, '-'), 7, 0, '-')
+	SELECT P.ID, INSERT(INSERT(CAST(P.ID AS CHAR(9)), 4, 0, '-'), 7, 0, '-')
 	FROM Person P
 );
 
 # Obtains formatted CC #:
 CREATE VIEW CreditCardNum (CustomerID, CC) AS (
-	SELECT C.ID, INSERT(INSERT(INSERT(C.CreditCard, 5, 0, ' '), 10, 0, ' '), 15, 0, ' ')
+	SELECT C.ID, INSERT(INSERT(INSERT(CAST(C.CreditCard AS CHAR(16)), 5, 0, ' '), 10, 0, ' '), 15, 0, ' ')
 	FROM Customer C
 );
 
