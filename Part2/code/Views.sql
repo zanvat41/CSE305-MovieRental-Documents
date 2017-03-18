@@ -85,6 +85,21 @@ CREATE VIEW PopularMovies (RentalCount, MovieID, Title) AS (
 );
 
 
+
+
+###### Customer Representative-Level Views ######
+
+# Produce customer mailing lists:
+CREATE VIEW MailingList (AccountID, CustomerID, CustomerName, Email, Subscription) AS (
+	SELECT A.ID, C.ID, C.FullName, C.Email, A.Subscription
+	FROM Account A JOIN (SELECT C1.ID, CONCAT(P.FirstName, ' ', P.LastName) FullName, C1.Email
+						 FROM Customer C1 JOIN Person P ON C1.ID = P.ID) C ON A.CustomerID = C.ID
+);
+
+# @TODO: "Produce a list of movie suggestions for a given customer" (?? From project spec)
+
+
+
 ###### Other Views ######
 
 # List of movies currently in customer movie queues:
