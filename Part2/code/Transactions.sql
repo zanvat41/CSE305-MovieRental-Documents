@@ -6,57 +6,165 @@
 # Database Schema - Transactions
 
 
-
+########################################
 ###### Manager-Level Transactions ######
+########################################
 
 # Add a movie:
 START TRANSACTION;
-INSERT INTO Movie (ID, Title, Genre, Fee, TotalCopies, Rating)
-VALUES (1, 'The Godfather', 'Drama', 0.00, 3, 5); # Fee should be 10000.00; will be edited in next transaction
+    INSERT INTO Movie (ID, Title, Genre, Fee, TotalCopies, Rating)
+    VALUES (1, 'The Godfather', 'Drama', 0.00, 3, 5); # Fee should be 10000.00; will be edited in next transaction
 COMMIT;
 
 # Edit a movie:
 START TRANSACTION;
-UPDATE Movie
-SET Fee=10000.00
-WHERE ID=1;
+    UPDATE Movie
+    SET Fee=10000.00
+    WHERE ID=1;
 COMMIT;
 
 # Delete a movie:
 START TRANSACTION;
-DELETE FROM Movie
-WHERE ID=1;
+    DELETE FROM Movie
+    WHERE ID=1;
 COMMIT;
 
 
 # Add an employee:
 START TRANSACTION;
-INSERT INTO Person (ID, LastName, FirstName, Address, City, State, Zip, Phone)
-VALUES (123456789, 'Smith', 'Dave', '123 College road',  'Stony Brook', 'NY', 11790, 5162152345); # FirstName should be 'David'; will be changed in the next transaction
+    INSERT INTO Person (ID, LastName, FirstName, Address, City, State, Zip, Phone)
+    VALUES (123456789, 'Smith', 'Dave', '123 College road',  'Stony Brook', 'NY', 11790, 5162152345); # FirstName should be 'David'; will be changed in the next transaction
 COMMIT;
 
 # Edit employee information:
 START TRANSACTION;
-UPDATE Employee
-SET FirstName='David'
-WHERE ID=123456789;
+    UPDATE Employee
+    SET FirstName='David'
+    WHERE ID=123456789;
 COMMIT;
 
 # Delete an employee:
-START TRANSACTION;
-DELETE FROM Employee
-WHERE ID=123456789;
+    START TRANSACTION;
+    DELETE FROM Employee
+    WHERE ID=123456789;
 COMMIT;
 
 
 # Obtain a sales report (i.e. the overall income from all active subscriptions) for a particular month:
 START TRANSACTION;
-# To calculate income for a given month, find all accounts created before the beginning of the FOLLOWING month
-# The following statement calculates income for October 2006:
-SELECT SUM(S.Income) MonthRevenue
-FROM SalesReport S
-WHERE S.AccountCreated < '2006-11-01';
-COMMIT; # This transaction doesn't change the DB
+    # To calculate income for a given month, find all accounts created before the beginning of the FOLLOWING month
+    # The following statement calculates income for October 2006:
+    SELECT SUM(S.Income) MonthRevenue
+    FROM SalesReport S     # SalesReport is a view
+    WHERE S.AccountCreated < '2006-11-01';
+COMMIT; # This "transaction" doesn't change the DB
 
 
 
+# Produce a list of movie rentals by movie name:
+START TRANSACTION;
+    SELECT *
+    FROM RentalsByMovie     # View
+    WHERE Title = 'The Godfather';
+COMMIT; # This "transaction" doesn't change the DB
+
+
+
+# Produce a list of movie rentals by movie type (genre):
+START TRANSACTION;
+    SELECT *
+    FROM RentalsByGenre     # View
+    WHERE Genre = 'Drama';
+COMMIT; # This "transaction" doesn't change the DB
+
+
+
+# Produce a list of movie rentals by customer name:
+START TRANSACTION;
+    SELECT *
+    FROM RentalsByCustomer     # View
+    WHERE CustomerName = 'Lewis Phillip';
+COMMIT; # This "transaction" doesn't change the DB
+
+
+
+# Determine which customer representative oversaw the most transactions (rentals):
+START TRANSACTION;
+    SELECT *
+    FROM RepRentalCount # View
+    LIMIT 1;
+COMMIT; # This "transaction" doesn't change the DB
+
+
+# Produce a list of most active customers:
+START TRANSACTION;
+    SELECT *
+    FROM MostActiveCustomers; # View
+COMMIT; # This "transaction" doesn't change the DB
+
+
+# Produce a list of most actively rented movies:
+START TRANSACTION;
+    SELECT *
+    FROM PopularMovies; # View
+COMMIT; # This "transaction" doesn't change the DB
+
+
+
+
+
+#############################################
+###### Customer Rep-Level Transactions ######
+#############################################
+
+# Record an order:
+START TRANSACTION;
+    INSERT INTO _Order (ID, OrderDate, ReturnDate)
+    VALUES (2, '2009-11-11 18:15:00', NULL); # If OrderDate is NULL, the current date/time is generated for this record
+    INSERT INTO Rental (OrderID, AccountID, MovieID, EmployeeID)
+    VALUES (2, 2, 3, 789123456); # Victor Du rented Borat; assisted by employee David Warren
+COMMIT;
+
+
+# Add a customer:
+START TRANSACTION;
+    INSERT INTO Person (ID, LastName, FirstName, Address, City, State, Zip, Phone)
+    VALUES (111111111, 'Yang', 'Shang', '123 Success Street',  'Stony Brook', 'MA', 11790, 5166328959); # State should be 'NY'; fixed in next transaction
+    INSERT INTO Customer (ID, Email, CreditCard, Rating)
+    VALUES (111111111, 'syang@cs.sunysb.edu', 1234567812345678, 1); # Shang Yang
+COMMIT;
+
+# Edit customer info:
+START TRANSACTION;
+    UPDATE Person
+    SET State='NY'
+    WHERE ID=111111111; # Shang Yang
+COMMIT;
+
+# Delete customer:
+START TRANSACTION;
+    DELETE FROM Person
+    WHERE ID=111111111; # Shang Yang
+COMMIT;
+
+
+# Produce customer mailing list:
+START TRANSACTION;
+    # Generates a mailing list for accounts with Unlimited++ subscriptions:
+    SELECT *
+    FROM MailingList    # View
+    WHERE Subscription = 'Unlimited++';
+COMMIT; # This "transaction" doesn't change the DB
+
+# @TODO: "Produce a list of movie suggestions for a given customer" (??)
+
+
+
+
+
+
+#########################################
+###### Customer-Level Transactions ######
+#########################################
+
+# @ TODO: Customer-Level Transactions
