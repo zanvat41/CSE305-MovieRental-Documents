@@ -36,23 +36,23 @@ CREATE VIEW SalesReport (AccountID, AccountType, AccountCreated, Income) AS (
 );
 
 # Produce a list of movie rentals by movie name:
-CREATE VIEW RentalsByMovie (Title, OrderID, AccountID, EmployeeID, MovieID) AS (
-    SELECT M.Title, R.OrderID, R.AccountID, R.EmployeeID, R.MovieID
+CREATE VIEW RentalsByMovie (OrderID, AccountID, EmployeeID, MovieID, Title) AS (
+    SELECT R.OrderID, R.AccountID, R.EmployeeID, R.MovieID, M.Title
     FROM Rental R JOIN Movie M ON (R.MovieID = M.ID)
     # WHERE M.Title = 'Movie Title'   # When a manager uses this transaction, title needs to be specified
 );
 
 # Produce a list of movie rentals by customer name:
-CREATE VIEW RentalsByCustomer (CustomerName, OrderID, AccountID, EmployeeID, MovieID) AS (
-    SELECT P.FullName, R.OrderID, R.AccountID, R.EmployeeID, R.MovieID
+CREATE VIEW RentalsByCustomer (OrderID, AccountID, EmployeeID, MovieID, CustomerName) AS (
+    SELECT R.OrderID, R.AccountID, R.EmployeeID, R.MovieID, P.FullName
     FROM Rental R JOIN (SELECT ID, CONCAT(FirstName, ' ', LastName) FullName
 	                    FROM Person) P
     # WHERE CustomerName='Customer Name'    # When a manager uses this transaction, customer's full name needs to be specified
 );
 
 # Produce a list of movie rentals by movie genre/type:
-CREATE VIEW RentalsByGenre (Genre, OrderID, AccountID, EmployeeID, MovieID) AS (
-	SELECT M.Genre, R.OrderID, R.AccountID, R.EmployeeID, R.MovieID
+CREATE VIEW RentalsByGenre (OrderID, AccountID, EmployeeID, MovieID, Genre) AS (
+	SELECT R.OrderID, R.AccountID, R.EmployeeID, R.MovieID, M.Genre
 	FROM Rental R JOIN Movie M ON (R.MovieID = M.ID)
 );
 
@@ -70,10 +70,10 @@ CREATE VIEW RepRentalCount (Count, SSN, FullName) AS (
 );
 
 # Produce a list of most active customers:
-CREATE VIEW MostActiveCustomer (AccountID, CustomerID, Rating, JoinDate) AS (
+CREATE VIEW MostActiveCustomers (AccountID, CustomerID, Rating, JoinDate) AS (
 	SELECT A.ID, A.CustomerID, C.Rating, A.Created 
 	FROM Customer C JOIN Account A ON C.ID = A.CustomerID
-	ORDER BY A.CustomerID DESC, A.Created DESC		# Sort by customer rating
+	ORDER BY C.Rating DESC, A.Created DESC		# Sort by customer rating
 );
 
 # Produce a list of most actively rented movies:
@@ -82,7 +82,7 @@ CREATE VIEW PopularMovies (RentalCount, MovieID, Title) AS (
 	FROM Movie M JOIN (SELECT COUNT(*) TotalRentals, MovieID
 					   FROM Rental
 					   GROUP BY MovieID) R ON M.ID = R.MovieID
-	ORDER BY R.TotalRentals DESC
+	ORDER BY R.TotalRentals DESC, M.Title ASC
 );
 
 
