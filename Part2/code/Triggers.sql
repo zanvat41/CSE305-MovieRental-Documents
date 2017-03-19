@@ -140,6 +140,18 @@ $$
 DELIMITER ;
 
 
+# Returns a movie (if the loan is still active):
+DELIMITER $$
+CREATE PROCEDURE SetReturned (OrderID INT UNSIGNED)
+BEGIN
+	UPDATE _Order O
+	SET O.ReturnDate = IFNULL(O.ReturnDate, NOW()) # Fill in return date
+	WHERE O.ID = OrderID;
+END;
+$$
+DELIMITER ;
+
+
 # If a movie is rented and not expired, delete from Queued:
 DELIMITER $$
 CREATE PROCEDURE DeleteFromQueue (IN New_AccountID INT UNSIGNED, New_MovieID INT UNSIGNED, New_OrderID INT UNSIGNED) # @TODO: Delete this procedure? Can movies be queued while checked out?
@@ -244,6 +256,7 @@ DELIMITER $$
 CREATE TRIGGER Queued_PreInsert_Checks BEFORE INSERT ON Queued
 FOR EACH ROW BEGIN
 	CALL AccountExistsBeforeQueue(NEW.AccountID, NEW.DateAdded);
+	SET NEW.DateAdded = IFNULL(NEW.DateAdded, NOW()); # Fill in queued date
 END;
 $$
 DELIMITER ;
@@ -272,6 +285,7 @@ DELIMITER $$
 CREATE TRIGGER Order_PreInsert_Checks BEFORE INSERT ON _Order
 FOR EACH ROW BEGIN
 	CALL CantReturnBeforeRenting(NEW.OrderDate, NEW.ReturnDate);
+	SET NEW.OrderDate = IFNULL(NEW.OrderDate, NOW()); # Fill in order date
 END;
 $$
 DELIMITER ;
@@ -279,6 +293,15 @@ DELIMITER ;
 
 
 
+# Pre-INSERT trigger for Employee:
+DELIMITER $$
+CREATE TRIGGER Employee_PreInsert_Checks BEFORE INSERT ON Employee
+FOR EACH ROW BEGIN
+	# Fill in start date:
+	SET NEW.StartDate = IFNULL(NEW.StartDate, CURDATE());
+END;
+$$
+DELIMITER ;
 # Pre-UPDATE trigger for Employee:
 DELIMITER $$
 CREATE TRIGGER Employee_PreUpdate_Checks BEFORE UPDATE ON Employee
@@ -295,6 +318,20 @@ FOR EACH ROW BEGIN
 END;
 $$
 DELIMITER ;
+
+
+
+
+# Pre-INSERT trigger for Account:
+DELIMITER $$
+CREATE TRIGGER Account_PreInsert_Checks BEFORE INSERT ON Account
+FOR EACH ROW BEGIN
+	# Fill in account creation date:
+	SET NEW.Created = IFNULL(NEW.Created, CURDATE());
+END;
+$$
+DELIMITER ;
+
 
 
 
