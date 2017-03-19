@@ -55,7 +55,6 @@ CREATE TABLE Account (
 	FOREIGN KEY (CustomerID) REFERENCES Customer(ID)
 		ON DELETE NO ACTION
 		ON UPDATE CASCADE
-	# @TODO: If account creation date is NULL on insert, make Created=CURDATE()
 );
 
 CREATE TABLE Employee ( # IsA Person
@@ -97,7 +96,7 @@ CREATE TABLE Actor (
 
 CREATE TABLE _Order (	# Apparently "Order" is a MySQL keyword...
 	ID INT UNSIGNED AUTO_INCREMENT,
-	OrderDate DATETIME NOT NULL,		# DATETIMEs are formatted like so: '2000-12-31 23:59:59'
+	OrderDate DATETIME,		# DATETIMEs are formatted like so: '2000-12-31 23:59:59'
 	ReturnDate DATETIME DEFAULT NULL,
 	PRIMARY KEY (ID),
 	CONSTRAINT chk_Dates CHECK (ReturnDate >= OrderDate)
@@ -147,7 +146,6 @@ CREATE TABLE Queued (
 	FOREIGN KEY (MovieID) REFERENCES Movie(ID)
 		ON DELETE CASCADE
 		ON UPDATE CASCADE
-	# @TODO: If queued time is NULL on insert, make DateAdded=NOW()
 );
 
 
