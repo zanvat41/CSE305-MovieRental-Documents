@@ -97,7 +97,7 @@ CREATE TABLE Actor (
 CREATE TABLE _Order (	# Apparently "Order" is a MySQL keyword...
 	ID INT UNSIGNED AUTO_INCREMENT,
 	OrderDate DATETIME,		# DATETIMEs are formatted like so: '2000-12-31 23:59:59'
-	ReturnDate DATETIME DEFAULT NULL,
+	ReturnDate DATETIME DEFAULT NULL,	# Can be set using SetReturned procedure
 	PRIMARY KEY (ID),
 	CONSTRAINT chk_Dates CHECK (ReturnDate >= OrderDate)
 );
