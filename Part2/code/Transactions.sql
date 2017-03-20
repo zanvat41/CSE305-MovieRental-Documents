@@ -230,3 +230,5 @@ COMMIT; # This "transaction" doesn't change the DB
     # @TODO: Implement this?
 #COMMIT; # This "transaction" doesn't change the DB
 
+
+# @TODO: "Rate the movies they have rented" (from project specification)
