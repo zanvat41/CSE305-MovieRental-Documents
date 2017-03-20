@@ -177,7 +177,7 @@ START TRANSACTION;
     WHERE CR.AccountID = 1;
 COMMIT; # This "transaction" doesn't change the DB
 
-# Customer's customer's queue of movies (for customer Lewis Phillip):
+# Customer's queue of movies (for customer Lewis Phillip):
 START TRANSACTION;
     SELECT MovieID, Title, DateAdded
     FROM MovieQueue MQ
@@ -203,21 +203,21 @@ COMMIT; # This "transaction" doesn't change the DB
 START TRANSACTION;
     SELECT *
     FROM AvailableMovies
-    WHERE Genre='Drama'
+    WHERE Genre='Drama';
 COMMIT; # This "transaction" doesn't change the DB
 
 # Movies available with a particular keyword or set of keywords in the movie name (in this case, 'God'):
 START TRANSACTION;
     SELECT *
     FROM AvailableMovies
-    WHERE UPPER(Title) LIKE '%GOD%'
+    WHERE UPPER(Title) LIKE '%GOD%';
 COMMIT; # This "transaction" doesn't change the DB
 
 # Movies available starring a particular actor or group of actors (in this case, 'Al Pacino'):
 START TRANSACTION;
     SELECT ActorID, MovieID, Title, Genre, MovieRating
     FROM Roles
-    WHERE ActorName = 'Al Pacino'
+    WHERE ActorName = 'Al Pacino';
 COMMIT; # This "transaction" doesn't change the DB
 
 # Best-Seller list of movies (??):
