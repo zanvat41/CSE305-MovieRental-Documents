@@ -370,6 +370,17 @@ FOR EACH ROW BEGIN
 END;
 $$
 DELIMITER ;
+# Pre-UPDATE trigger for Person:
+DELIMITER $$
+CREATE TRIGGER Person_PreUpdate_Checks BEFORE UPDATE ON Person
+FOR EACH ROW BEGIN
+	DECLARE current_person_index INT;
+	SET current_person_index = (SELECT AUTO_INC FROM PersonData WHERE ID='1');
+	SET NEW.ID = IF(NEW.ID=0, current_person_index, NEW.ID);
+	CALL GetNextPersonID(NEW.ID, current_person_index);
+END;
+$$
+DELIMITER ;
 
 
 
