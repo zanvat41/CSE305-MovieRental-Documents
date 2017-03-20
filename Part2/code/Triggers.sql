@@ -385,20 +385,3 @@ DELIMITER ;
 
 
 
-
-# Pre-INSERT trigger for Movie:
-DELIMITER $$
-CREATE TRIGGER Movie_PreInsert_Checks BEFORE INSERT ON Movie
-FOR EACH ROW BEGIN
-	# @TODO
-END;
-$$
-DELIMITER ;
-# Pre-UPDATE trigger for Movie:
-DELIMITER $$
-CREATE TRIGGER Movie_PreUpdate_Checks BEFORE UPDATE ON Movie
-FOR EACH ROW BEGIN
-	# @TODO
-END;
-$$
-DELIMITER ;
