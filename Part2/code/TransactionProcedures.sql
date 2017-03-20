@@ -56,7 +56,7 @@ DELIMITER ;
 DELIMITER $$
 CREATE PROCEDURE AddEmployee (IN    new_Position ENUM('Manager', 'Customer Rep'), new_SSN INT UNSIGNED, new_FirstName VARCHAR(64),
                                     new_LastName VARCHAR(64), new_Address VARCHAR(64), new_City VARCHAR(64), new_State CHAR(2),
-                                    new_Zip INT(5) UNSIGNED, new_Phone BIGINT(10) UNSIGNED)
+                                    new_Zip INT(5) UNSIGNED, new_Phone BIGINT(10) UNSIGNED, new_StartDate DATE, new_Wage FLOAT)
 BEGIN
     DECLARE current_person_index INT; # Needed if a customer exists with the new Employee's SSN
     SET new_SSN = IF(new_SSN=0, (SELECT AUTO_INC FROM PersonData LIMIT 1), new_SSN);
@@ -74,7 +74,7 @@ BEGIN
     END IF;
     COMMIT;
     START TRANSACTION;
-    INSERT INTO Employee (SSN, Position) VALUES (new_SSN, new_Position);
+    INSERT INTO Employee (SSN, Position, StartDate, HourlyRate) VALUES (new_SSN, new_Position, new_StartDate, new_Wage);
     COMMIT;
 END;
 $$
@@ -83,7 +83,8 @@ DELIMITER ;
 # Add a Manager:
 DELIMITER $$
 CREATE PROCEDURE AddManager (IN    new_SSN INT UNSIGNED, new_FirstName VARCHAR(64), new_LastName VARCHAR(64), new_Address VARCHAR(64),
-                                    new_City VARCHAR(64), new_State CHAR(2), new_Zip INT(5) UNSIGNED, new_Phone BIGINT(10) UNSIGNED)
+                                    new_City VARCHAR(64), new_State CHAR(2), new_Zip INT(5) UNSIGNED, new_Phone BIGINT(10) UNSIGNED,
+                                    new_StartDate DATE, new_Wage FLOAT)
 BEGIN
     DECLARE current_person_index INT; # Needed if a customer exists with the new Employee's SSN
     SET new_SSN = IF(new_SSN=0, (SELECT AUTO_INC FROM PersonData LIMIT 1), new_SSN);
@@ -101,7 +102,7 @@ BEGIN
     END IF;
     COMMIT;
     START TRANSACTION;
-    INSERT INTO Employee (SSN, Position) VALUES (new_SSN, 'Manager');
+    INSERT INTO Employee (SSN, Position, StartDate, HourlyRate) VALUES (new_SSN, 'Manager', new_StartDate, new_Wage);
     COMMIT;
 END;
 $$
@@ -110,7 +111,8 @@ DELIMITER ;
 # Add a Customer Rep:
 DELIMITER $$
 CREATE PROCEDURE AddCustomerRep (IN new_SSN INT UNSIGNED, new_FirstName VARCHAR(64), new_LastName VARCHAR(64), new_Address VARCHAR(64),
-                                    new_City VARCHAR(64), new_State CHAR(2), new_Zip INT(5) UNSIGNED, new_Phone BIGINT(10) UNSIGNED)
+                                    new_City VARCHAR(64), new_State CHAR(2), new_Zip INT(5) UNSIGNED, new_Phone BIGINT(10) UNSIGNED,
+                                    new_StartDate DATE, new_Wage FLOAT)
 BEGIN
     DECLARE current_person_index INT; # Needed if a customer exists with the new Employee's SSN
     SET new_SSN = IF(new_SSN=0, (SELECT AUTO_INC FROM PersonData LIMIT 1), new_SSN);
@@ -128,7 +130,7 @@ BEGIN
     END IF;
     COMMIT;
     START TRANSACTION;
-    INSERT INTO Employee (SSN, Position) VALUES (new_SSN, 'Customer Rep');
+    INSERT INTO Employee (SSN, Position, StartDate, HourlyRate) VALUES (new_SSN, 'Customer Rep', new_StartDate, new_Wage);
     COMMIT;
 END;
 $$
