@@ -202,6 +202,20 @@ $$
 DELIMITER ;
 
 
+# Gets the next sequential unused PersonData AUTO_INC value for Person IDs:
+DELIMITER $$
+CREATE PROCEDURE GetNextPersonID (IN new_PersonID INT(9) UNSIGNED ZEROFILL, current_PersonIndex INT(9) UNSIGNED ZEROFILL)
+BEGIN
+	WHILE current_PersonIndex=new_PersonID DO
+	SET current_PersonIndex = current_PersonIndex + 1;
+	SET new_PersonID = IF(EXISTS(SELECT P.ID FROM Person P WHERE P.ID=current_PersonIndex), current_PersonIndex, current_PersonIndex+1);
+	UPDATE PersonData
+	SET AUTO_INC = current_PersonIndex
+	WHERE ID='1';
+	END WHILE;
+END;
+$$
+DELIMITER ;
 
 
 
@@ -328,6 +342,31 @@ CREATE TRIGGER Account_PreInsert_Checks BEFORE INSERT ON Account
 FOR EACH ROW BEGIN
 	# Fill in account creation date:
 	SET NEW.Created = IFNULL(NEW.Created, CURDATE());
+END;
+$$
+DELIMITER ;
+
+
+
+
+# Table to hold variables used by Person triggers:
+CREATE TABLE PersonData (
+	OnlyOne ENUM('Can\'t INSERT on this table.') NOT NULL
+					DEFAULT 'Can\'t INSERT on this table.',
+	ID ENUM('1') NOT NULL DEFAULT '1',
+	AUTO_INC INT(9) UNSIGNED ZEROFILL NOT NULL DEFAULT 1,
+	PRIMARY KEY(OnlyOne),
+	UNIQUE KEY(ID)
+);
+INSERT INTO PersonData () VALUES (); # Initialize the singleton PersonData table, which holds persistent variables for the Person table
+# Pre-INSERT trigger for Person:
+DELIMITER $$
+CREATE TRIGGER Person_PreInsert_Checks BEFORE INSERT ON Person
+FOR EACH ROW BEGIN
+	DECLARE current_person_index INT;
+	SET current_person_index = (SELECT AUTO_INC FROM PersonData WHERE ID='1');
+	SET NEW.ID = IF(NEW.ID=0, current_person_index, NEW.ID);
+	CALL GetNextPersonID(NEW.ID, current_person_index);
 END;
 $$
 DELIMITER ;

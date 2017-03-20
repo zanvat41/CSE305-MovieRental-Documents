@@ -12,7 +12,7 @@
 ##########################
 
 CREATE TABLE Person (
-	ID INT(9) UNSIGNED ZEROFILL AUTO_INCREMENT,	# This is a customer's ID and an employee's SSN
+	ID INT(9) UNSIGNED ZEROFILL DEFAULT 0,	# This is a customer's ID and an employee's SSN
 	LastName VARCHAR(64),
 	FirstName VARCHAR(64),
 	Address VARCHAR(64),
@@ -30,6 +30,7 @@ CREATE TABLE Person (
 	Phone BIGINT(10) UNSIGNED ZEROFILL,
 	PRIMARY KEY (ID),
 	UNIQUE KEY NameAddress (LastName, FirstName, Address, City, State, Zip) # There won't be two people with the same name in the same house
+	# @TODO: BEFORE INSERT, check that ID is not greater than 999999999 (And do the same for zipcode and phone number)
 );
 
 CREATE TABLE Customer ( # IsA Person
@@ -44,6 +45,7 @@ CREATE TABLE Customer ( # IsA Person
 	# UNIQUE KEY (Email), # Don't allow multiple accounts tied to the same email address	# EDIT: or they can? Part1 solution says customers can have multiple accounts
 	CONSTRAINT chk_Rating CHECK (Rating IN (1, 2, 3, 4, 5)),
 	CONSTRAINT chk_Email CHECK (Email LIKE '%_@_%._%') # The '%' char checks for 0 or more chars; '_' checks for exactly 1 character
+	# @TODO: BEFORE INSERT, check that CreditCard is not greater than 9999999999999999 (can't be more than 16 digits)
 );
 
 CREATE TABLE Account (
