@@ -265,9 +265,87 @@ DELIMITER ;
 ##############################################
 ####### Customer Rep-Level Procedures ########
 ##############################################
-# @TODO
+
+# Add a customer:
+DELIMITER $$
+CREATE PROCEDURE AddCustomer (IN new_FirstName VARCHAR(64), new_LastName VARCHAR(64), new_Address VARCHAR(64),
+                                    new_City VARCHAR(64), new_State CHAR(2), new_Zip INT(5) UNSIGNED, new_Phone BIGINT(10) UNSIGNED,
+                                    new_Email VARCHAR(64), new_CreditCard BIGINT(16) UNSIGNED ZEROFILL)
+BEGIN
+	START TRANSACTION;
+        INSERT INTO Person (FirstName, LastName, Address, City, State, Zip, Phone)
+        VALUES (new_FirstName, new_LastName, new_Address, new_City, new_State, new_Zip, new_Phone);
+
+        INSERT INTO Customer (Email, CreditCard, ID)
+        VALUES (new_Email, new_CreditCard, (SELECT ID
+                                            FROM Person P
+                                            WHERE P.LastName = new_LastName
+                                            AND P.FirstName = new_FirstName
+                                            AND P.Address = new_Address
+                                            AND P.City = new_City
+                                            AND P.State = new_State
+                                            AND P.Zip = new_Zip));
+    COMMIT;
+END;
+$$
+DELIMITER ;
+
+# Edit Customer info:
+DELIMITER $$
+CREATE PROCEDURE EditCustomer (IN CustomerID INT UNSIGNED, _Attribute VARCHAR(64), new_Value VARCHAR(256))
+BEGIN
+    START TRANSACTION;
+        IF _Attribute IN ('ID', 'FirstName', 'LastName', 'Address', 'City', 'State', 'Zip', 'Phone') THEN
+            SET @editCustomer_str = CONCAT('UPDATE Person SET ', _Attribute, '=', new_Value, ' WHERE ID=', EmployeeSSN);
+            PREPARE editCustomer_stmt FROM @editCustomer_str;
+            EXECUTE editCustomer_stmt;
+            DEALLOCATE PREPARE editCustomer_stmt;
+        ELSE
+            SET @editCustomer_str = CONCAT('UPDATE Customer SET ', _Attribute, '=', new_Value, ' WHERE ID=', CustomerID);
+            PREPARE editCustomer_stmt FROM @editCustomer_str;
+            EXECUTE editCustomer_stmt;
+            DEALLOCATE PREPARE editCustomer_stmt;
+        END IF;
+    COMMIT;
+END;
+$$
+DELIMITER ;
+
+# Delete a Customer:
+DELIMITER $$
+CREATE PROCEDURE DeleteCustomer (IN CustomerID INT UNSIGNED)
+BEGIN
+    IF EXISTS(SELECT * FROM Customer WHERE ID = CustomerID) THEN
+        START TRANSACTION;
+            DELETE FROM Person
+            WHERE ID=CustomerID;
+        COMMIT;
+    ELSE
+        SIGNAL SQLSTATE 'EI928'
+            SET MESSAGE_TEXT = 'Invalid Parameter: Customer does not exist.';
+    END IF;
+END;
+$$
+DELIMITER ;
 
 
+# Record an Order:
+DELIMITER $$
+CREATE PROCEDURE CreateOrder(IN new_OrderDate DATETIME, new_AccountID INT UNSIGNED, new_MovieID INT UNSIGNED, new_EmployeeID INT(9) UNSIGNED ZEROFILL)
+BEGIN
+    START TRANSACTION;
+        INSERT INTO _Order (OrderDate)
+        VALUES (new_OrderDate); # If new_OrderDate is NULL, the current date/time is generated for this record
+
+        INSERT INTO Rental (AccountID, MovieID, EmployeeID, OrderID)
+        VALUES (new_AccountID, new_MovieID, new_EmployeeID, (SELECT AUTO_INCREMENT-1
+                                                            FROM  INFORMATION_SCHEMA.TABLES
+                                                            WHERE TABLE_SCHEMA = DATABASE()
+                                                            AND   TABLE_NAME   = '_Order'));        # @TODO: Change this to use LAST_INSERT_ID() to avoid sync issues (not important for part 2)
+    COMMIT;
+END;
+$$
+DELIMITER ;
 
 
 
