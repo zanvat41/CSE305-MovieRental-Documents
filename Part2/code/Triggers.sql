@@ -154,7 +154,7 @@ DELIMITER ;
 
 # If a movie is rented and not expired, delete from Queued:
 DELIMITER $$
-CREATE PROCEDURE DeleteFromQueue (IN New_AccountID INT UNSIGNED, New_MovieID INT UNSIGNED, New_OrderID INT UNSIGNED) # @TODO: Delete this procedure? Can movies be queued while checked out?
+CREATE PROCEDURE DeleteFromQueue (IN New_AccountID INT UNSIGNED, New_MovieID INT UNSIGNED, New_OrderID INT UNSIGNED)
 BEGIN
 	IF	(NULL = (SELECT ReturnDate
 				FROM _Order
@@ -186,7 +186,7 @@ DELIMITER ;
 
 # Make sure there is always at least 1 manager:
 DELIMITER $$
-CREATE PROCEDURE ManagerExistsOnDelete (IN EmployeeID INT(9) UNSIGNED ZEROFILL, Pos ENUM('Manager', 'Customer Rep')) # @TODO: Add this procedure/trigger for Person (with extra check that the person is a manager)
+CREATE PROCEDURE ManagerExistsOnDelete (IN EmployeeID INT(9) UNSIGNED ZEROFILL, Pos ENUM('Manager', 'Customer Rep'))
 BEGIN
 	IF	('Manager' = Pos) AND
 		NOT EXISTS 	(SELECT *
