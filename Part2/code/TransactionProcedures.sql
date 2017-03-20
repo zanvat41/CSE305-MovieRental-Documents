@@ -49,8 +49,6 @@ $$
 DELIMITER ;
 
 
-# @TODO: "Produce a comprehensive listing of all movies" (?)
-
 
 # Add an Employee:
 DELIMITER $$
@@ -284,7 +282,7 @@ BEGIN
                                             AND P.Address = new_Address
                                             AND P.City = new_City
                                             AND P.State = new_State
-                                            AND P.Zip = new_Zip));
+                                            AND P.Zip = new_Zip)); # @TODO: Change this to use LAST_INSERT_ID() to avoid sync issues (not important for part 2)
     COMMIT;
 END;
 $$
