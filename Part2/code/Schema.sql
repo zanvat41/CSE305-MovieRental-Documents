@@ -13,10 +13,10 @@
 
 CREATE TABLE Person (
 	ID INT(9) UNSIGNED ZEROFILL DEFAULT 0,	# This is a customer's ID and an employee's SSN
-	LastName VARCHAR(64),
-	FirstName VARCHAR(64),
-	Address VARCHAR(64),
-	City VARCHAR(64),
+	LastName VARCHAR(64) NOT NULL,
+	FirstName VARCHAR(64) NOT NULL,
+	Address VARCHAR(64) NOT NULL,
+	City VARCHAR(64) NOT NULL,
 	# ENUMs also act as domains:
 	State ENUM('AK','AL','AR','AZ','CA','CO','CT', # ENUM Domain (for valid state/territory/base abbreviations)
 		'DE','FL','GA','HI','IA','ID','IL','IN','KS',
@@ -25,9 +25,9 @@ CREATE TABLE Person (
 		'OH','OK','OR','PA','RI','SC','SD','TN','TX',
 		'UT','VA','VT','WA','WI','WV','WY',
 		'AS','DC','FM','GU','MH','MP','PR','PW','VI', # Territories/federal districts
-		'AA','AE','AP'), # Military bases
-	Zip INT(5) UNSIGNED ZEROFILL,
-	Phone BIGINT(10) UNSIGNED ZEROFILL,
+		'AA','AE','AP') NOT NULL, # Military bases
+	Zip INT(5) UNSIGNED ZEROFILL NOT NULL,
+	Phone BIGINT(10) UNSIGNED ZEROFILL NOT NULL,
 	PRIMARY KEY (ID),
 	UNIQUE KEY NameAddress (LastName, FirstName, Address, City, State, Zip) # There won't be two people with the same name in the same house
 	# @TODO: BEFORE INSERT, check that ID is not greater than 999999999 (And do the same for zipcode and phone number)
@@ -69,7 +69,6 @@ CREATE TABLE Employee ( # IsA Person
 		ON DELETE CASCADE
 		ON UPDATE CASCADE,
 	CONSTRAINT chk_Pay CHECK (HourlyRate >= 9.00) # Make sure employees don't get paid below minimum wage @TODO: make min wage a constant?
-	# @TODO: On Employee INSERT/UPDATE, if SSN conflicts with some customer's account ID, change customer ID (?)
 	# @TODO: On Employee INSERT, grant permissions to determine whether the user is a customer rep or manager (?)
 );
 
