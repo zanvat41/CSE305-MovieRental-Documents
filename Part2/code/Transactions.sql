@@ -34,19 +34,20 @@ COMMIT;
 START TRANSACTION;
     INSERT INTO Person (ID, LastName, FirstName, Address, City, State, Zip, Phone)
     VALUES (123456789, 'Smith', 'Dave', '123 College road',  'Stony Brook', 'NY', 11790, 5162152345); # FirstName should be 'David'; will be changed in the next transaction
+    INSERT INTO Employee (SSN, Position) VALUES (123456789, 'Customer Rep');
 COMMIT;
 
 # Edit employee information:
 START TRANSACTION;
-    UPDATE Employee
+    UPDATE Person
     SET FirstName='David'
     WHERE ID=123456789;
 COMMIT;
 
 # Delete an employee:
-    START TRANSACTION;
+START TRANSACTION;
     DELETE FROM Employee
-    WHERE ID=123456789;
+    WHERE SSN=123456789;
 COMMIT;
 
 
