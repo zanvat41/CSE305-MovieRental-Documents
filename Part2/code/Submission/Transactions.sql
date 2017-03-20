@@ -245,6 +245,19 @@ END;
 $$
 DELIMITER ;
 
+# Create a customer account:
+DELIMITER $$
+CREATE PROCEDURE CreateAccount(IN new_CustomerID INT(9) UNSIGNED ZEROFILL, new_Subscription ENUM('Limited', 'Unlimited', 'Unlimited+', 'Unlimited++'), new_Created DATE)
+BEGIN
+    START TRANSACTION;
+        INSERT INTO Account(CustomerID, Subscription, Created)
+        VALUES (new_CustomerID, new_Subscription, new_Created); # If new_Created is NULL, the current date/time is generated for this record
+    COMMIT;
+END;
+$$
+DELIMITER ;
+
+
 
 # Produce customer mailing lists:
 SELECT *
