@@ -282,7 +282,7 @@ BEGIN
                                             AND P.Address = new_Address
                                             AND P.City = new_City
                                             AND P.State = new_State
-                                            AND P.Zip = new_Zip)); # @TODO: Change this to use LAST_INSERT_ID() to avoid sync issues (not important for part 2)
+                                            AND P.Zip = new_Zip));
     COMMIT;
 END;
 $$
@@ -336,24 +336,13 @@ BEGIN
         VALUES (new_OrderDate); # If new_OrderDate is NULL, the current date/time is generated for this record
 
         INSERT INTO Rental (AccountID, MovieID, EmployeeID, OrderID)
-        VALUES (new_AccountID, new_MovieID, new_EmployeeID, (SELECT AUTO_INCREMENT-1
-                                                            FROM  INFORMATION_SCHEMA.TABLES
-                                                            WHERE TABLE_SCHEMA = DATABASE()
-                                                            AND   TABLE_NAME   = '_Order'));        # @TODO: Change this to use LAST_INSERT_ID() to avoid sync issues (not important for part 2)
+        VALUES (new_AccountID, new_MovieID, new_EmployeeID, (SELECT LAST_INSERT_ID()));
     COMMIT;
 END;
 $$
 DELIMITER ;
 
 
-
-
-
-
-##########################################
-####### Customer-Level Procedures ########
-##########################################
-# @TODO
 
 
 
