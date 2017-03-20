@@ -104,28 +104,59 @@ CREATE VIEW MailingList (AccountID, CustomerID, CustomerName, Email, Subscriptio
 
 
 ###### Customer-Level Views ######
-# (Used for Customer-level transactions)
+# Customer-Level transactions are essentially Views because none of the Customer-level transactions alter the database
 
-# @TODO: Customer-level views
-
-
-
-
-###### General Views ######
+# List of movies each customer has out:
+CREATE VIEW CurrentRentals (AccountID, MovieID, Title, OrderDate) AS (
+	SELECT AccountID, MovieID, Title, OrderDate
+	FROM (Rental JOIN _Order ON OrderID = _Order.ID) JOIN Movie ON (MovieID = Movie.ID)
+	WHERE ReturnDate = NULL
+	ORDER BY OrderDate ASC
+);
 
 # List of movies currently in customer movie queues:
-CREATE VIEW MovieQueue (AccountID, MovieID, Title, DateAdded) AS (
-	SELECT AccountID, MovieID, Title, DateAdded
-	FROM Queued JOIN Movie ON (MovieID = ID)
+CREATE VIEW MovieQueue (AccountID, CustomerID, MovieID, Title, DateAdded) AS (
+	SELECT Q.AccountID, A.CustomerID, Q.MovieID, M.Title, Q.DateAdded
+	FROM (Queued Q JOIN Movie M ON (Q.MovieID = M.ID)) JOIN Account A ON (Q.AccountID = A.ID)
 	ORDER BY DateAdded ASC
 );
 
 # List of all movies each customer has rented:
-CREATE VIEW RentalHistory (AccountID, MovieID, Title, Genre, Rating, OrderDate, ReturnDate) AS (
-	SELECT AccountID, MovieID, Title, Genre, Movie.Rating, OrderDate, ReturnDate
+CREATE VIEW RentalHistory (AccountID, OrderID, MovieID, Title, Genre, Rating, OrderDate, ReturnDate) AS (
+	SELECT AccountID, OrderID, MovieID, Title, Genre, Movie.Rating, OrderDate, ReturnDate
 	FROM (Rental JOIN _Order ON OrderID = _Order.ID) JOIN Movie ON (MovieID = Movie.ID)
 	ORDER BY OrderDate DESC
 );
+
+# List of the number of copies available for each movie:
+CREATE VIEW AvailableCopies (MovieID, Copies) AS (
+	SELECT MovieID, TotalCopies - COUNT(*)
+	FROM (Rental JOIN _Order ON OrderID = _Order.ID) JOIN Movie ON (MovieID = Movie.ID)
+	WHERE ReturnDate = NULL
+	GROUP BY MovieID
+);
+
+# List of available movies:
+CREATE VIEW AvailableMovies(MovieID, Title, Genre, Rating, AvailableCopies, TotalCopies) AS (
+	SELECT MovieID, Title, Genre, Rating, A.Copies, TotalCopies
+	FROM Movie JOIN AvailableCopies A ON (ID=A.MovieID)
+	WHERE A.Copies > 0
+);
+
+# Each actor's first and last name combined as a single string:
+CREATE VIEW ActorName (ActorID, FullName) AS (
+	SELECT ID, CONCAT(FirstName, ' ', LastName)
+	FROM Actor
+);
+
+# List of all movies each actor has been in:
+CREATE VIEW Roles (ActorID, ActorName, MovieID, Title, Genre, MovieRating) AS (
+	SELECT Casted.ActorID, FullName, MovieID, Title, Genre, Movie.Rating
+	FROM ((Actor JOIN ActorName ON (Actor.ID = ActorName.ActorID)) JOIN Casted ON (Actor.ID = Casted.ActorID)) JOIN Movie ON (MovieID = Movie.ID)
+);
+
+
+###### General Views ######
 
 # List of movies that customers currently have loaned:
 CREATE VIEW CurrentLoans (AccountID, MovieID, Title, OrderDate) AS (
@@ -140,28 +171,6 @@ CREATE VIEW CastList (MovieID, ActorID, FirstName, LastName, Gender, Age, ActorR
 	FROM (Actor JOIN Casted ON (Actor.ID = ActorID)) JOIN Movie ON (MovieID = Movie.ID)
 );
 
-# List of all movies each actor has been in:
-CREATE VIEW Roles (ActorID, MovieID, Title, Genre, MovieRating) AS (
-	SELECT ActorID, MovieID, Title, Genre, Movie.Rating
-	FROM (Actor JOIN Casted ON (Actor.ID = ActorID)) JOIN Movie ON (MovieID = Movie.ID)
-);
-
-# List of the number of copies available for each movie:
-CREATE VIEW AvailableCopies (MovieID, Copies) AS (
-	SELECT MovieID, TotalCopies - COUNT(*)
-	FROM (Rental JOIN _Order ON OrderID = _Order.ID) JOIN Movie ON (MovieID = Movie.ID)
-	WHERE ReturnDate = NULL
-	GROUP BY MovieID
-);
-
-# List of movies each customer has out:
-CREATE VIEW CurrentRentals (AccountID, MovieID, Title, OrderDate) AS (
-	SELECT AccountID, MovieID, Title, OrderDate
-	FROM (Rental JOIN _Order ON OrderID = _Order.ID) JOIN Movie ON (MovieID = Movie.ID)
-	WHERE ReturnDate = NULL
-	ORDER BY OrderDate ASC
-);
-
 CREATE VIEW Invoice (OrderID, AccountID, OrderDate, ReturnDate, MovieID, RepID) AS (
 	SELECT OrderID, AccountID, OrderDate, ReturnDate, MovieID, EmployeeID
 	FROM Rental JOIN _Order ON (OrderID = ID)
@@ -170,11 +179,6 @@ CREATE VIEW Invoice (OrderID, AccountID, OrderDate, ReturnDate, MovieID, RepID) 
 CREATE VIEW PersonName (PersonID, Name) AS (
 	SELECT ID, CONCAT(FirstName, ' ', LastName)
 	FROM Person
-);
-
-CREATE VIEW ActorName (ActorID, Name) AS (
-	SELECT ID, CONCAT(FirstName, ' ', LastName)
-	FROM Actor
 );
 
 CREATE VIEW PersonListName (PersonID, ListName) AS (
