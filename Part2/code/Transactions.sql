@@ -167,4 +167,66 @@ COMMIT; # This "transaction" doesn't change the DB
 ###### Customer-Level Transactions ######
 #########################################
 
-# See Customer-Level Views
+# The 'START TRANSACTION' and 'COMMIT' statements are redundant because the database is never altered; however, the project specification says to include these statements for all "transactions"...
+
+ # Customer's currently held movies (for customer Lewis Phillip):
+START TRANSACTION;
+    SELECT MovieID, Title, OrderDate
+    FROM CurrentRentals CR
+    WHERE CR.AccountID = 1;
+COMMIT; # This "transaction" doesn't change the DB
+
+# Customer's customer's queue of movies (for customer Lewis Phillip):
+START TRANSACTION;
+    SELECT MovieID, Title, DateAdded
+    FROM MovieQueue MQ
+    WHERE CR.AccountID = 1;
+COMMIT; # This "transaction" doesn't change the DB
+
+# Customer's account settings (??) (for customer Lewis Phillip):
+START TRANSACTION;
+    # @TODO: Figure out what this transaction is actually supposed to do
+    SELECT Subscription
+    FROM Account
+    WHERE ID=1;
+COMMIT; # This "transaction" doesn't change the DB
+
+# History of all current and past orders a customer has placed (for customer Lewis Phillip):
+START TRANSACTION;
+    SELECT OrderID, MovieID, Title, OrderDate, ReturnDate
+    FROM RentalHistory
+    WHERE AccountID=1;
+COMMIT; # This "transaction" doesn't change the DB
+
+# Movies available of a particular type/genre (in this case, Drama):
+START TRANSACTION;
+    SELECT *
+    FROM AvailableMovies
+    WHERE Genre='Drama'
+COMMIT; # This "transaction" doesn't change the DB
+
+# Movies available with a particular keyword or set of keywords in the movie name (in this case, 'God'):
+START TRANSACTION;
+    SELECT *
+    FROM AvailableMovies
+    WHERE UPPER(Title) LIKE '%GOD%'
+COMMIT; # This "transaction" doesn't change the DB
+
+# Movies available starring a particular actor or group of actors (in this case, 'Al Pacino'):
+START TRANSACTION;
+    SELECT ActorID, MovieID, Title, Genre, MovieRating
+    FROM Roles
+    WHERE ActorName = 'Al Pacino'
+COMMIT; # This "transaction" doesn't change the DB
+
+# Best-Seller list of movies (??):
+#START TRANSACTION;
+    # @TODO: Implement this?
+#COMMIT; # This "transaction" doesn't change the DB
+
+
+# Personalized movie suggestion list (??):
+#START TRANSACTION;
+    # @TODO: Implement this?
+#COMMIT; # This "transaction" doesn't change the DB
+
