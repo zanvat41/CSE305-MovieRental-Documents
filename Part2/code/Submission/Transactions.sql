@@ -410,7 +410,13 @@ WHERE Subscription = ?;     # ? Is the account subscription type ('Limited', 'Un
 
 
 
-# @TODO: "Produce a list of movie suggestions for a given customer (using the recommender system which uses information about the customer's past orders and that of nearest neighbors)" (??) No idea what he wants for this
+# Produce a list of movie suggestions for a Shang Yang, by filtering same actors
+START TRANSACTION;
+    SELECT M.Title
+    FROM Movie M, Rental R,Casted C1, Casted C2
+    WHERE M.ID NOT IN (SELECT MovieID FROM R WHERE R.Account = 111111111) AND
+    (C1.MovieID = M.ID AND C2.MovieID = R.MovieID AND C1.ActorID = C2.ActorID);
+COMMIT; 
 
 
 
