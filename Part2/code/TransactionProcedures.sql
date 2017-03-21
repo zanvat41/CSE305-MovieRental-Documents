@@ -48,6 +48,82 @@ END;
 $$
 DELIMITER ;
 
+# Add an Actor:
+DELIMITER $$
+CREATE PROCEDURE AddActor (IN new_FirstName VARCHAR(64), new_LastName VARCHAR(64), new_Gender ENUM ('M', 'F'), new_Age INT UNSIGNED, new_Rating INT UNSIGNED)
+BEGIN
+	START TRANSACTION;
+        INSERT INTO Actor (FirstName, LastName, Gender, Age, Rating)
+        VALUES (new_FirstName, new_LastName, new_Gender, new_Age, new_Rating);
+    COMMIT;
+END;
+$$
+DELIMITER ;
+
+# Edit an Actor:
+DELIMITER $$
+CREATE PROCEDURE EditActor (IN ActorID INT UNSIGNED, _Attribute VARCHAR(64), new_Value VARCHAR(256))
+BEGIN
+    START TRANSACTION;
+        SET @editActor_str = CONCAT('UPDATE Actor SET ', _Attribute, '=', new_Value, ' WHERE ID=', ActorID);
+        PREPARE editActor_stmt FROM @editActor_str;
+        EXECUTE editActor_stmt;
+        DEALLOCATE PREPARE editActor_stmt;
+    COMMIT;
+END;
+$$
+DELIMITER ;
+
+# Delete an Actor:
+DELIMITER $$
+CREATE PROCEDURE DeleteActor (IN ActorID INT UNSIGNED)
+BEGIN
+    START TRANSACTION;
+        DELETE FROM Actor
+        WHERE ID=ActorID;
+    COMMIT;
+END;
+$$
+DELIMITER ;
+
+# Add an Actor to the cast of a Movie:
+DELIMITER $$
+CREATE PROCEDURE AddRole (IN new_ActorID INT UNSIGNED, new_MovieID INT UNSIGNED)
+BEGIN
+	START TRANSACTION;
+        INSERT INTO Casted (ActorID, MovieID)
+        VALUES (new_ActorID, new_MovieID);
+    COMMIT;
+END;
+$$
+DELIMITER ;
+
+# Edit a casting role:
+DELIMITER $$
+CREATE PROCEDURE EditRole (IN ActorID INT UNSIGNED, MovieID INT UNSIGNED, _Attribute VARCHAR(64), new_Value VARCHAR(256))
+BEGIN
+    START TRANSACTION;
+        SET @editCasted_str = CONCAT('UPDATE Casted SET ', _Attribute, '=', new_Value, ' WHERE ActorID=', ActorID, ' AND MovieID=', MovieID);
+        PREPARE editCasted_stmt FROM @editCasted_str;
+        EXECUTE editCasted_stmt;
+        DEALLOCATE PREPARE editCasted_stmt;
+    COMMIT;
+END;
+$$
+DELIMITER ;
+
+# Delete a casting role:
+DELIMITER $$
+CREATE PROCEDURE DeleteRole (IN Actor INT UNSIGNED, Movie INT UNSIGNED)
+BEGIN
+    START TRANSACTION;
+        DELETE FROM Casted
+        WHERE ActorID=Actor AND MovieID=Movie;
+    COMMIT;
+END;
+$$
+DELIMITER ;
+
 
 
 # Add an Employee:
@@ -294,7 +370,7 @@ CREATE PROCEDURE EditCustomer (IN CustomerID INT UNSIGNED, _Attribute VARCHAR(64
 BEGIN
     START TRANSACTION;
         IF _Attribute IN ('ID', 'FirstName', 'LastName', 'Address', 'City', 'State', 'Zip', 'Phone') THEN
-            SET @editCustomer_str = CONCAT('UPDATE Person SET ', _Attribute, '=', new_Value, ' WHERE ID=', EmployeeSSN);
+            SET @editCustomer_str = CONCAT('UPDATE Person SET ', _Attribute, '=', new_Value, ' WHERE ID=', CustomerID);
             PREPARE editCustomer_stmt FROM @editCustomer_str;
             EXECUTE editCustomer_stmt;
             DEALLOCATE PREPARE editCustomer_stmt;
@@ -342,6 +418,45 @@ END;
 $$
 DELIMITER ;
 
+# Edit an Order:
+DELIMITER $$
+CREATE PROCEDURE EditOrder (IN _OrderID INT UNSIGNED, _Attribute VARCHAR(64), new_Value VARCHAR(256))
+BEGIN
+    START TRANSACTION;
+        IF _Attribute IN ('ID', 'OrderDate', 'ReturnDate') THEN
+            SET @editOrder_str = CONCAT('UPDATE _Order SET ', _Attribute, '=', new_Value, ' WHERE ID=', _OrderID);
+            PREPARE editOrder_stmt FROM @editOrder_str;
+            EXECUTE editOrder_stmt;
+            DEALLOCATE PREPARE editOrder_stmt;
+        ELSE
+            SET @editOrder_str = CONCAT('UPDATE Rental SET ', _Attribute, '=', new_Value, ' WHERE OrderID=', _OrderID, ' LIMIT 1');
+            PREPARE editOrder_stmt FROM @editCustomer_str;
+            EXECUTE editOrder_stmt;
+            DEALLOCATE PREPARE editOrder_stmt;
+        END IF;
+    COMMIT;
+END;
+$$
+DELIMITER ;
+
+# Delete an Order:
+DELIMITER $$
+CREATE PROCEDURE DeleteOrder (IN _OrderID INT UNSIGNED)
+BEGIN
+    IF EXISTS(SELECT * FROM Rental WHERE OrderID = _OrderID) THEN
+        START TRANSACTION;
+            DELETE FROM Rental
+            WHERE OrderID=_OrderID;
+        COMMIT;
+    END IF;
+    START TRANSACTION;
+        DELETE FROM _Order
+        WHERE ID=_OrderID;
+    COMMIT;
+END;
+$$
+DELIMITER ;
+
 
 # Create a customer account:
 DELIMITER $$
@@ -354,6 +469,33 @@ BEGIN
 END;
 $$
 DELIMITER ;
+
+# Edit a customer Account:
+DELIMITER $$
+CREATE PROCEDURE EditAccount (IN AccountID INT UNSIGNED, _Attribute VARCHAR(64), new_Value VARCHAR(256))
+BEGIN
+    START TRANSACTION;
+        SET @editAccount_str = CONCAT('UPDATE Account SET ', _Attribute, '=', new_Value, ' WHERE ID=', AccountID);
+        PREPARE editAccount_stmt FROM @editAccount_str;
+        EXECUTE editAccount_stmt;
+        DEALLOCATE PREPARE editAccount_stmt;
+    COMMIT;
+END;
+$$
+DELIMITER ;
+
+# Delete a customer Account:
+DELIMITER $$
+CREATE PROCEDURE DeleteAccount (IN AccountID INT UNSIGNED)
+BEGIN
+    START TRANSACTION;
+        DELETE FROM Account
+        WHERE ID=AccountID;
+    COMMIT;
+END;
+$$
+DELIMITER ;
+
 
 
 
