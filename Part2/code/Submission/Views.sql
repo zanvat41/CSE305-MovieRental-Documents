@@ -146,4 +146,11 @@ CREATE VIEW Roles (ActorID, ActorName, MovieID, Title, Genre, MovieRating) AS (
 	FROM ((Actor JOIN ActorName ON (Actor.ID = ActorName.ActorID)) JOIN Casted ON (Actor.ID = Casted.ActorID)) JOIN Movie ON (MovieID = Movie.ID)
 );
 
+CREATE VIEW RentTimes AS (
+	SELECT Title, COUNT(*) AS countTimes
+    FROM RentalsByMovie
+    GROUP BY Title
+    ORDER BY countTimes DESC
+);
+
 
