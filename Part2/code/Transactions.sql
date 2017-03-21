@@ -157,8 +157,13 @@ START TRANSACTION;
     WHERE Subscription = 'Unlimited++';
 COMMIT; # This "transaction" doesn't change the DB
 
-# @TODO: "Produce a list of movie suggestions for a given customer" (??)
-
+# Produce a list of movie suggestions for a Shang Yang, by filtering same actors
+START TRANSACTION;
+    SELECT M.Title
+    FROM Movie M, Rental R,Casted C1, Casted C2
+    WHERE M.ID NOT IN (SELECT MovieID FROM R WHERE R.Account = 111111111) AND
+    (C1.MovieID = M.ID AND C2.MovieID = R.MovieID AND C1.ActorID = C2.ActorID);
+COMMIT; 
 
 
 
