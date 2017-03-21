@@ -411,13 +411,13 @@ WHERE Subscription = ?;     # ? Is the account subscription type ('Limited', 'Un
 
 
 
-# Produce a list of movie suggestions for a given customer, by filtering same actors
-
+# Produce a list of movie suggestions for a given customer, by 1.filtering same actors 2. from neighbors
 SELECT M.Title
 FROM Movie M, Rental R,Casted C1, Casted C2
-WHERE M.ID NOT IN (SELECT MovieID FROM R WHERE R.Account = ?) AND
-(C1.MovieID = M.ID AND C2.MovieID = R.MovieID AND C1.ActorID = C2.ActorID); 
-
+WHERE M.ID NOT IN (SELECT MovieID FROM R WHERE R.AccountID = ?) AND # ? is the Account number of the given customer
+((C1.MovieID = M.ID AND C2.MovieID = R.MovieID AND C1.ActorID = C2.ActorID) OR
+(MovieID IN (SELECT MovieID FROM R WHERE R.AccountID = ?-1 % COUNT(R.AccountID) OR R.AccountID = ?+1 % COUNT(R.AccountID)))
+); 
 
 
 
@@ -442,8 +442,7 @@ FROM MovieQueue MQ    # See Views
 WHERE CR.AccountID = ?;   # ? Is the customer's account ID
 
 
-# Customer's account settings (??):
-# @TODO: I don't know what this transaction is actually supposed to do (currently displays subscription type)
+# Customer's account settings (Subscription type):
 SELECT Subscription
 FROM Account
 WHERE ID = ?;   # ? Is the customer's account ID
