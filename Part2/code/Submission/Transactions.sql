@@ -484,6 +484,19 @@ WHERE M.ID = C.MovieID
 AND CONCAT(A.FirstName, ' ', A.LastName) = ? # ? is the actor name provided
 AND C.ActorID = A.ID;
 
-# @TODO: "Rate the movies the customer has rented"   ????
+# Rate the movies the customer has rented
+DELIMITER $$
+CREATE PROCEDURE rateRented (IN mvTitle CHAR, rate INT UNSIGNED)
+BEGIN
+    START TRANSACTION;
+		IF mvTitle IN (SELECT Title FROM RentalsByMovie WHERE AccountID = ?) THEN # ? is the account id of the customer		
+			UPDATE Movie
+			SET Rating = (rate + Rating) / (1 + (SELECT countTimes FROM RentTimes WHERE Title = mvTitle))
+			WHERE Title = mvTitle;	
+		END IF;
+    COMMIT;
+END;
+$$
+DELIMITER ;
 
 
