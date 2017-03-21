@@ -477,7 +477,12 @@ SELECT R.Title
 FROM RentTimes
 LIMIT 10;
 
-# @TODO: "Personalized movie suggestion list"   ????
+# Personalized movie suggestion list (Assuming that customer provide a actor name)
+SELECT M.Title
+From Movie M, Casted C, Actor A
+WHERE M.ID = C.MovieID
+AND CONCAT(A.FirstName, ' ', A.LastName) = ? # ? is the actor name provided
+AND C.ActorID = A.ID;
 
 # @TODO: "Rate the movies the customer has rented"   ????
 
