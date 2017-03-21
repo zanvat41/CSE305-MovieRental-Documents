@@ -1,4 +1,5 @@
-# Zhe Lin 109369879
+
+ Zhe Lin 109369879
 # Sean Pesce 107102508
 # Weichao Zhao 109957656
 #
@@ -410,13 +411,12 @@ WHERE Subscription = ?;     # ? Is the account subscription type ('Limited', 'Un
 
 
 
-# Produce a list of movie suggestions for a Shang Yang, by filtering same actors
-START TRANSACTION;
-    SELECT M.Title
-    FROM Movie M, Rental R,Casted C1, Casted C2
-    WHERE M.ID NOT IN (SELECT MovieID FROM R WHERE R.Account = 111111111) AND
-    (C1.MovieID = M.ID AND C2.MovieID = R.MovieID AND C1.ActorID = C2.ActorID);
-COMMIT; 
+# Produce a list of movie suggestions for a given customer, by filtering same actors
+
+SELECT M.Title
+FROM Movie M, Rental R,Casted C1, Casted C2
+WHERE M.ID NOT IN (SELECT MovieID FROM R WHERE R.Account = ?) AND
+(C1.MovieID = M.ID AND C2.MovieID = R.MovieID AND C1.ActorID = C2.ActorID); 
 
 
 
