@@ -29,8 +29,6 @@ INSERT INTO Employee (SSN, StartDate, Position, HourlyRate)
 VALUES (789123456, '2006-02-02', 'Manager', 50.00); # David Warren (Manager)
 
 
-
-
 ### Customers ###
 
 INSERT INTO Person (ID, LastName, FirstName, Address, City, State, Zip, Phone)
@@ -62,7 +60,6 @@ VALUES (444444444, 'Phillip', 'Lewis', '135 Knowledge Lane',  'Stony Brook', 'NY
 
 INSERT INTO Customer (ID, Email, CreditCard, Rating)
 VALUES (444444444, 'pml@cs.sunysb.edu', 6789234567892345, 1); # Lewis Phillip
-
 
 
 
