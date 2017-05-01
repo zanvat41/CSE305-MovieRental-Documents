@@ -7,8 +7,11 @@
 
 # This file can be copied and pasted directly into mysql to create the users from the demo data and grant them the correct privileges.
 
-# Employee usernames are first initial and last name
-# Employee passwords are last initial and first name
+# To grant execute permissions:
+# GRANT EXECUTE ON PROCEDURE cse305db.procedure TO 'user'@'localhost';
+
+# Employee database usernames are first initial and last name
+# Employee database passwords are last initial and first name
 
 CREATE USER 'dwarren'@'localhost' IDENTIFIED BY 'wdavid';
 
