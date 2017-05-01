@@ -7,6 +7,9 @@
 
 # This file can be copied and pasted directly into mysql to populate a pre-built database with the provided Demo Data.
 
+CALL AddEmployee('Manager', 789123456, 'David', 'Warren', '456 Sunken Street', 'Stony Brook', 'NY', 11794, 6316329987, '2006-02-02', 50.00);
+CALL AddEmployee('Customer Rep', 123456789, 'David', 'Smith', '123 College road', 'Stony Brook', 'NY', 11790, 5162152345, '2005-11-01', 60.00);
+
 CALL AddCustomer('Shang', 'Yang', '123 Success Street', 'Stony Brook', 'NY', 11790, 5166328959, 'syang@cs.sunysb.edu', 1234567812345678);
 CALL AddCustomer('Victor', 'Du', '456 Fortune Road', 'Stony Brook', 'NY', 11790, 5166324360, 'vicdu@cs.sunysb.edu', 5678123456781234);
 CALL AddCustomer('John', 'Smith', '789 Peace Blvd.', 'Los Angeles', 'CA', 93536, 3154434321, 'jsmith@ic.sunysb.edu', 2345678923456789);
@@ -19,9 +22,6 @@ CALL EditCustomer(4, 'ID', 444444444);
 
 CALL CreateAccount(444444444, 'Unlimited+', '2006-10-01');
 CALL CreateAccount(222222222, 'Limited', '2006-10-15');
-
-CALL AddEmployee('Customer Rep', 123456789, 'David', 'Smith', '123 College road', 'Stony Brook', 'NY', 11790, 5162152345, '2005-11-01', 60.00);
-CALL AddEmployee('Manager', 789123456, 'David', 'Warren', '456 Sunken Street', 'Stony Brook', 'NY', 11794, 6316329987, '2006-02-02', 50.00);
 
 CALL AddMovie('The Godfather', 'Drama', 10000.00, 3);
 CALL AddMovie('Shawshank Redemption',  'Drama', 1000.00, 2);
