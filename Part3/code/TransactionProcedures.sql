@@ -534,7 +534,13 @@ END;
 $$
 DELIMITER ;
 
-
+DELIMITER //
+CREATE PROCEDURE searchMovieByType(IN MType CHAR(6))
+BEGIN
+    SELECT *
+    FROM Movie M
+    WHERE M.Genre LIKE CONCAT('%', CONCAT(MType, '%'));
+END //
 
 
 
