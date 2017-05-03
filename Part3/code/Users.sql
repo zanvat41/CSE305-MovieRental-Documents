@@ -8,7 +8,7 @@
 # This file can be copied and pasted directly into mysql to create the users from the demo data and grant them the correct privileges.
 
 # To grant execute permissions:
-# GRANT EXECUTE ON PROCEDURE cse305db.procedure TO 'user'@'%';
+# GRANT EXECUTE ON PROCEDURE cse305.procedure TO 'user'@'%';
 
 # Employee database usernames are first initial and last name
 # Employee database passwords are last initial and first name
@@ -16,49 +16,57 @@
 # David Warren (Manager)
 CREATE USER 'dwarren'@'%' IDENTIFIED BY 'wdavid';
 
-GRANT EXECUTE ON PROCEDURE cse305db.AddMovie TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.EditMovie TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.DeleteMovie TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.AddActor TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.EditActor TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.DeleteActor TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.AddRole TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.EditRole TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.DeleteRole TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.AddEmployee TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.AddManager TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.AddCustomerRep TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.EditEmployee TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.DeleteEmployee TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.ViewSales TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.RentalsByMovie TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.RentalsByGenre TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.RentalsByCustomer TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.MostTransactions TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.ActiveCustomers TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.PopularMovies TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.AddCustomer TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.EditCustomer TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.DeleteCustomer TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.CreateOrder TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.EditOrder TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.DeleteOrder TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.CreateAccount TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.EditAccount TO 'dwarren'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.DeleteAccount TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.AddMovie TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.EditMovie TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.DeleteMovie TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.AddActor TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.EditActor TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.DeleteActor TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.AddRole TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.EditRole TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.DeleteRole TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.AddEmployee TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.AddManager TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.AddCustomerRep TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.EditEmployee TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.DeleteEmployee TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.ViewSales TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.RentalsByMovie TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.RentalsByGenre TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.RentalsByCustomer TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.MostTransactions TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.ActiveCustomers TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.PopularMovies TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.AddCustomer TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.EditCustomer TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.DeleteCustomer TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.CreateOrder TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.EditOrder TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.DeleteOrder TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.CreateAccount TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.EditAccount TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.DeleteAccount TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.SearchMovieByTitle TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.SearchMovieByType TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.SearchMovieByGenre TO 'dwarren'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.SearchMovieByActor TO 'dwarren'@'%';
 
 
 # David Smith (Customer Representative)
 CREATE USER 'dsmith'@'%' IDENTIFIED BY 'sdavid';
 
-GRANT EXECUTE ON PROCEDURE cse305db.AddCustomer TO 'dsmith'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.EditCustomer TO 'dsmith'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.DeleteCustomer TO 'dsmith'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.CreateOrder TO 'dsmith'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.EditOrder TO 'dsmith'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.DeleteOrder TO 'dsmith'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.CreateAccount TO 'dsmith'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.EditAccount TO 'dsmith'@'%';
-GRANT EXECUTE ON PROCEDURE cse305db.DeleteAccount TO 'dsmith'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.AddCustomer TO 'dsmith'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.EditCustomer TO 'dsmith'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.DeleteCustomer TO 'dsmith'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.CreateOrder TO 'dsmith'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.EditOrder TO 'dsmith'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.DeleteOrder TO 'dsmith'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.CreateAccount TO 'dsmith'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.EditAccount TO 'dsmith'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.DeleteAccount TO 'dsmith'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.SearchMovieByTitle TO 'dsmith'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.SearchMovieByType TO 'dsmith'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.SearchMovieByGenre TO 'dsmith'@'%';
+GRANT EXECUTE ON PROCEDURE cse305.SearchMovieByActor TO 'dsmith'@'%';
 
 
