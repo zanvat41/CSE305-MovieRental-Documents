@@ -271,20 +271,30 @@ CREATE VIEW RentalHistory (AccountID, OrderID, MovieID, Title, Genre, Rating, Or
 	ORDER BY OrderDate DESC
 );
 
-# List of the number of copies available for each movie:
-CREATE VIEW AvailableCopies (MovieID, Copies) AS (
-	SELECT MovieID, TotalCopies - COUNT(*)
-	FROM (Rental JOIN _Order ON OrderID = _Order.ID) JOIN Movie ON (MovieID = Movie.ID)
-	WHERE ReturnDate = NULL
-	GROUP BY MovieID
+# List of movies with no current rentals (all copies are currently available):
+CREATE VIEW MoviesWithAllCopiesAvailable(MovieID, Title, TotalCopies, CurrentRentals, AvailableCopies) AS (
+	SELECT M.ID, M.Title, M.TotalCopies, 0, M.TotalCopies
+	FROM Movie M JOIN Rental R ON R.MovieID = M.ID
+	WHERE NOT EXISTS (SELECT * FROM _Order O JOIN Rental R2 ON O.ID = R2.OrderID WHERE O.ReturnDate IS NULL AND R2.MovieID = M.ID)
 );
 
-# List of available movies:
-CREATE VIEW AvailableMovies(MovieID, Title, Genre, Rating, AvailableCopies, TotalCopies) AS (
-	SELECT MovieID, Title, Genre, Rating, A.Copies, TotalCopies
-	FROM Movie JOIN AvailableCopies A ON (ID=A.MovieID)
-	WHERE A.Copies > 0
+# List of movies with some current rentals, but some copies available:
+CREATE VIEW MoviesWithSomeAvailableCopies(MovieID, Title, TotalCopies, CurrentRentals, AvailableCopies) AS (
+	SELECT R.MovieID, M.Title, M.TotalCopies, COUNT(*), M.TotalCopies - COUNT(*)
+	FROM (_Order O JOIN Rental R ON O.ID = R.OrderID) JOIN Movie M ON R.MovieID = M.ID
+	WHERE O.ReturnDate IS NULL
+	GROUP BY R.MovieID
 );
+
+# List of available movies and the number of copies available for each of those movies:
+CREATE VIEW AvailableMovies(MovieID, Title, TotalCopies, CurrentRentals, AvailableCopies) AS 
+	(SELECT *
+	FROM MoviesWithAllCopiesAvailable AS List1)
+	UNION
+	(SELECT *
+	FROM MoviesWithSomeAvailableCopies AS List2)
+	
+;
 
 # Each actor's first and last name combined as a single string:
 CREATE VIEW ActorName (ActorID, FullName) AS (
@@ -303,7 +313,7 @@ CREATE VIEW Roles (ActorID, ActorName, MovieID, Title, Genre, MovieRating) AS (
 CREATE VIEW CurrentLoans (AccountID, MovieID, Title, OrderDate) AS (
 	SELECT AccountID, MovieID, Title, OrderDate
 	FROM (Rental JOIN _Order ON OrderID = _Order.ID) JOIN Movie ON (MovieID = Movie.ID)
-	WHERE ReturnDate = NULL
+	WHERE ReturnDate IS NULL
 );
 
 # List of all actors casted in each movie:
@@ -470,7 +480,7 @@ BEGIN
 			WHERE
 				New_AccountID = R1.AccountID AND
 				New_MovieID = R1.MovieID AND
-				O2.ReturnDate = NULL AND
+				O2.ReturnDate IS NULL AND
 				New_OrderID != O2.ID
 		)
 	THEN 
@@ -498,7 +508,7 @@ BEGIN
 				(SELECT COUNT(*)
 				FROM Rental R JOIN _Order O2 ON (R.OrderID = O2.ID)
 				WHERE New_MovieID = R.MovieID AND
-				O2.ReturnDate = NULL AND
+				O2.ReturnDate IS NULL AND
 				New_OrderID != O2.ID
 				))
 	THEN 
@@ -1145,6 +1155,56 @@ BEGIN
 END;
 $$
 DELIMITER ;
+
+
+
+
+# Find all movies with the given keyword in the title:
+DELIMITER $$
+CREATE PROCEDURE SearchMovieByTitle(IN Keyword VARCHAR(64))
+BEGIN
+	SELECT ID, Title, Genre, Rating
+	FROM Movie M
+	WHERE M.Title LIKE CONCAT('%', Keyword, '%');
+
+END;
+$$
+DELIMITER ;
+
+# Find all movies whose genre contains the string MType
+DELIMITER $$
+CREATE PROCEDURE SearchMovieByType(IN MType VARCHAR(9))
+BEGIN
+    SELECT *
+    FROM Movie M
+    WHERE M.Genre LIKE CONCAT('%', MType, '%');
+END;
+$$
+DELIMITER ;
+
+# Find all movies whose genre contains the string MType
+DELIMITER $$
+CREATE PROCEDURE SearchMovieByGenre(IN MType VARCHAR(9))
+BEGIN
+    SELECT *
+    FROM Movie M
+    WHERE M.Genre LIKE CONCAT('%', MType, '%');
+END;
+$$
+DELIMITER ;
+
+
+# Find all movies with actors match the given name keyword
+DELIMITER $$
+CREATE PROCEDURE SearchMovieByActor(IN Name VARCHAR(64))
+BEGIN
+    SELECT M.ID AS MovieID, M.Title, M.Genre, M.Rating AS MovieRating, A.ID AS ActorID, A.FirstName, A.LastName, A.Rating AS ActorRating
+    FROM Movie M JOIN (Actor A JOIN Casted C ON A.ID = C.ActorID) ON M.ID = C.MovieID
+    WHERE A.FirstName LIKE CONCAT('%', Name, '%') OR A.LastName LIKE CONCAT('%', Name, '%');
+END;
+$$
+DELIMITER ;
+
 
 
 

@@ -100,7 +100,7 @@ BEGIN
 			WHERE
 				New_AccountID = R1.AccountID AND
 				New_MovieID = R1.MovieID AND
-				O2.ReturnDate = NULL AND
+				O2.ReturnDate IS NULL AND
 				New_OrderID != O2.ID
 		)
 	THEN 
@@ -128,7 +128,7 @@ BEGIN
 				(SELECT COUNT(*)
 				FROM Rental R JOIN _Order O2 ON (R.OrderID = O2.ID)
 				WHERE New_MovieID = R.MovieID AND
-				O2.ReturnDate = NULL AND
+				O2.ReturnDate IS NULL AND
 				New_OrderID != O2.ID
 				))
 	THEN 

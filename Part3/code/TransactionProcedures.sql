@@ -503,10 +503,9 @@ DELIMITER ;
 ####### Customer-Level Procedures ########
 ##############################################
 
-# Find all movies with one of the given keywords in the title:
-#   NOTE: SearchResults should be deleted after the search results have been obtained.
+# Find all movies with the given keyword in the title:
 DELIMITER $$
-CREATE PROCEDURE SearchMovies (IN Keyword VARCHAR(64))
+CREATE PROCEDURE SearchMovieByTitle(IN Keyword VARCHAR(64))
 BEGIN
 	SELECT ID, Title, Genre, Rating
 	FROM Movie M
@@ -516,13 +515,38 @@ END;
 $$
 DELIMITER ;
 
-DELIMITER //
-CREATE PROCEDURE searchMovieByType(IN MType CHAR(6))
+# Find all movies whose genre contains the string MType
+DELIMITER $$
+CREATE PROCEDURE SearchMovieByType(IN MType VARCHAR(9))
 BEGIN
     SELECT *
     FROM Movie M
-    WHERE M.Genre LIKE CONCAT('%', CONCAT(MType, '%'));
-END //
+    WHERE M.Genre LIKE CONCAT('%', MType, '%');
+END;
+$$
+DELIMITER ;
+
+# Find all movies whose genre contains the string MType
+DELIMITER $$
+CREATE PROCEDURE SearchMovieByGenre(IN MType VARCHAR(9))
+BEGIN
+    SELECT *
+    FROM Movie M
+    WHERE M.Genre LIKE CONCAT('%', MType, '%');
+END;
+$$
+DELIMITER ;
+
+# Find all movies with actors match the given name keyword
+DELIMITER $$
+CREATE PROCEDURE SearchMovieByActor(IN Name VARCHAR(64))
+BEGIN
+    SELECT M.ID AS MovieID, M.Title, M.Genre, M.Rating AS MovieRating, A.ID AS ActorID, A.FirstName, A.LastName, A.Rating AS ActorRating
+    FROM Movie M JOIN (Actor A JOIN Casted C ON A.ID = C.ActorID) ON M.ID = C.MovieID
+    WHERE A.FirstName LIKE CONCAT('%', Name, '%') OR A.LastName LIKE CONCAT('%', Name, '%');
+END;
+$$
+DELIMITER ;
 
 
 
