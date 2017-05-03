@@ -13,8 +13,8 @@
 # Includes all functioning table creations, views, triggers, and procedures.
 
 # Optional statements if you haven't created a database yet:
-#    CREATE DATABASE cse305db;
-#    USE cse305db;
+#    CREATE DATABASE cse305;
+#    USE cse305;
 
 
 # If you've already created a blank database, start here:
