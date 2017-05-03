@@ -508,28 +508,10 @@ DELIMITER ;
 DELIMITER $$
 CREATE PROCEDURE SearchMovies (IN Keyword VARCHAR(64))
 BEGIN
-        DECLARE `table_doesnt_exist` TINYINT(1) DEFAULT 0;
-        DECLARE CONTINUE HANDLER FOR SQLSTATE VALUE '42S02' SET `table_doesnt_exist` := 1;
-        DO (SELECT NULL FROM SearchResults LIMIT 0);
-        IF (`table_doesnt_exist`) THEN
-            DROP TEMPORARY TABLE IF EXISTS SearchResultsTemp;
-            CREATE TEMPORARY TABLE SearchResults
-                        (SELECT ID
-                        FROM Movie M
-                        WHERE M.Title LIKE CONCAT('%', Keyword, '%'));
-        ELSE
-            DROP TEMPORARY TABLE IF EXISTS SearchResultsTemp;
-            CREATE TEMPORARY TABLE SearchResultsTemp
-                            SELECT *
-                            FROM SearchResults;
-            DROP TEMPORARY TABLE IF EXISTS SearchResults;
-            CREATE TEMPORARY TABLE SearchResults
-                            (SELECT ID
-                            FROM Movie M
-                            WHERE M.Title LIKE CONCAT('%', Keyword, '%'))
-                            UNION (SELECT * FROM SearchResultsTemp);
-            DROP TEMPORARY TABLE IF EXISTS SearchResultsTemp;
-        END IF;
+	SELECT ID, Title, Genre, Rating
+	FROM Movie M
+	WHERE M.Title LIKE CONCAT('%', Keyword, '%');
+
 END;
 $$
 DELIMITER ;
