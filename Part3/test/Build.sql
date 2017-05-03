@@ -111,6 +111,18 @@ CREATE TABLE _Order (	# Apparently "Order" is a MySQL keyword...
 	CONSTRAINT chk_Dates CHECK (ReturnDate >= OrderDate)
 );
 
+CREATE TABLE UnconfirmedOrder (
+	AccountID INT UNSIGNED,
+	MovieID INT UNSIGNED,
+	PRIMARY KEY (AccountID, MovieID),
+	FOREIGN KEY (AccountID) REFERENCES Account(ID)
+		ON DELETE CASCADE
+		ON UPDATE CASCADE,
+	FOREIGN KEY (MovieID) REFERENCES Movie(ID)
+		ON DELETE CASCADE
+		ON UPDATE CASCADE
+);
+
 
 
 # Represents movies that have been rented by customers
@@ -293,7 +305,6 @@ CREATE VIEW AvailableMovies(MovieID, Title, TotalCopies, CurrentRentals, Availab
 	UNION
 	(SELECT *
 	FROM MoviesWithSomeAvailableCopies AS List2)
-	
 ;
 
 # Each actor's first and last name combined as a single string:

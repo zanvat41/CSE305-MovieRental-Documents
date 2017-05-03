@@ -97,13 +97,24 @@ CREATE TABLE Actor (
 
 CREATE TABLE _Order (	# Apparently "Order" is a MySQL keyword...
 	ID INT UNSIGNED AUTO_INCREMENT,
-	OrderDate DATETIME,		# DATETIMEs are formatted like so: '2000-12-31 23:59:59'
+	OrderDate DATETIME,	# DATETIMEs are formatted like so: '2000-12-31 23:59:59'
 	ReturnDate DATETIME DEFAULT NULL,	# Can be set using SetReturned procedure
 	PRIMARY KEY (ID),
 	CONSTRAINT chk_Dates CHECK (ReturnDate >= OrderDate)
 );
 
-
+# An Order that hasn't been confirmed by a customer rep yet
+CREATE TABLE UnconfirmedOrder (
+	AccountID INT UNSIGNED,
+	MovieID INT UNSIGNED,
+	PRIMARY KEY (AccountID, MovieID),
+	FOREIGN KEY (AccountID) REFERENCES Account(ID)
+		ON DELETE CASCADE
+		ON UPDATE CASCADE,
+	FOREIGN KEY (MovieID) REFERENCES Movie(ID)
+		ON DELETE CASCADE
+		ON UPDATE CASCADE
+);
 
 
 #######################
