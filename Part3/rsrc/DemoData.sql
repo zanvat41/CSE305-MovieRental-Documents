@@ -79,7 +79,7 @@ INSERT INTO Movie (ID, Title, Genre, Fee, TotalCopies, Rating)
 VALUES (2, 'Shawshank Redemption', 'Drama', 1000.00, 2, 4);
 
 INSERT INTO Movie (ID, Title, Genre, Fee, TotalCopies, Rating)
-VALUES (3, 'Borat', 'Comedy', 500.00, 1, 3);
+VALUES (3, 'Borat', 'Comedy', 500.00, 5, 3);
 
 
 
