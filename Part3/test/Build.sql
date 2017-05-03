@@ -250,8 +250,8 @@ CREATE VIEW MailingList (AccountID, CustomerID, CustomerName, Email, Subscriptio
 
 
 # List of movies each customer has out:
-CREATE VIEW CurrentRentals (AccountID, MovieID, Title, OrderDate) AS (
-	SELECT AccountID, MovieID, Title, OrderDate
+CREATE VIEW CurrentRentals (AccountID, MovieID, Title, OrderDate, OrderID) AS (
+	SELECT AccountID, MovieID, Title, OrderDate, OrderID
 	FROM (Rental JOIN _Order ON OrderID = _Order.ID) JOIN Movie ON (MovieID = Movie.ID)
 	WHERE ReturnDate IS NULL
 	ORDER BY OrderDate ASC
