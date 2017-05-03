@@ -150,8 +150,17 @@ CREATE VIEW AvailableMovies(MovieID, Title, TotalCopies, CurrentRentals, Availab
 	UNION
 	(SELECT *
 	FROM MoviesWithSomeAvailableCopies AS List2)
-	
 ;
+
+# List of movies with zero copies available
+CREATE VIEW UnavailableMovies(MovieID, Title, TotalCopies, CurrentRentals, AvailableCopies) AS (
+	SELECT M.ID, M.Title, M.TotalCopies, M.TotalCopies, 0
+	FROM Movie M
+	WHERE NOT EXISTS (
+		SELECT *
+		FROM AvailableMovies A
+		WHERE A.MovieID = M.ID)
+);
 
 
 # Each actor's first and last name combined as a single string:
