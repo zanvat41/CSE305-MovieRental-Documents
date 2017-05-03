@@ -25,7 +25,7 @@ CALL CreateAccount(222222222, 'Limited', '2006-10-15');
 
 CALL AddMovie('The Godfather', 'Drama', 10000.00, 3);
 CALL AddMovie('Shawshank Redemption',  'Drama', 1000.00, 2);
-CALL AddMovie('Borat', 'Comedy', 500.00, 1);
+CALL AddMovie('Borat', 'Comedy', 500.00, 5);
 
 CALL EditMovie(1, 'Rating', 5);
 CALL EditMovie(2, 'Rating', 4);
