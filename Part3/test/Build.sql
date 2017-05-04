@@ -284,28 +284,29 @@ CREATE VIEW RentalHistory (AccountID, OrderID, MovieID, Title, Genre, Rating, Or
 );
 
 # List of movies with no current rentals (all copies are currently available):
-CREATE VIEW MoviesWithAllCopiesAvailable(MovieID, Title, TotalCopies, CurrentRentals, AvailableCopies) AS (
-	SELECT M.ID, M.Title, M.TotalCopies, 0, M.TotalCopies
+CREATE VIEW MoviesWithAllCopiesAvailable(MovieID, Title, Genre, Fee, TotalCopies, CurrentRentals, AvailableCopies, Ratings) AS (
+	SELECT M.ID, M.Title, M.Genre, M.Fee, M.TotalCopies, 0, M.TotalCopies, M.Rating
 	FROM Movie M JOIN Rental R ON R.MovieID = M.ID
 	WHERE NOT EXISTS (SELECT * FROM _Order O JOIN Rental R2 ON O.ID = R2.OrderID WHERE O.ReturnDate IS NULL AND R2.MovieID = M.ID)
 );
 
 # List of movies with some current rentals, but some copies available:
-CREATE VIEW MoviesWithSomeAvailableCopies(MovieID, Title, TotalCopies, CurrentRentals, AvailableCopies) AS (
-	SELECT R.MovieID, M.Title, M.TotalCopies, COUNT(*), M.TotalCopies - COUNT(*)
+CREATE VIEW MoviesWithSomeAvailableCopies(MovieID, Title, Genre, Fee, TotalCopies, CurrentRentals, AvailableCopies, Ratings) AS (
+	SELECT R.MovieID, M.Title, M.Genre, M.Fee, M.TotalCopies, COUNT(*), M.TotalCopies - COUNT(*), M.Rating
 	FROM (_Order O JOIN Rental R ON O.ID = R.OrderID) JOIN Movie M ON R.MovieID = M.ID
 	WHERE O.ReturnDate IS NULL
 	GROUP BY R.MovieID
 );
 
 # List of available movies and the number of copies available for each of those movies:
-CREATE VIEW AvailableMovies(MovieID, Title, TotalCopies, CurrentRentals, AvailableCopies) AS 
+CREATE VIEW AvailableMovies(MovieID, Title, Genre, Fee, TotalCopies, CurrentRentals, AvailableCopies, Ratings) AS 
 	(SELECT *
 	FROM MoviesWithAllCopiesAvailable AS List1)
 	UNION
 	(SELECT *
 	FROM MoviesWithSomeAvailableCopies AS List2)
 ;
+
 
 # Each actor's first and last name combined as a single string:
 CREATE VIEW ActorName (ActorID, FullName) AS (
