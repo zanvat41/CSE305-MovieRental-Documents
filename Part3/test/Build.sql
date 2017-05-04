@@ -1008,7 +1008,19 @@ END;
 $$
 DELIMITER ;
 
-
+# Obtain a sales report (i.e. the overall income from all active subscriptions) for a particular month:
+DELIMITER $$
+CREATE PROCEDURE ViewSales (IN FromDate DATE, OUT Monthly_Revenue VARCHAR(32))
+BEGIN
+    # To calculate income for a given month, find all accounts created before the beginning of the FOLLOWING month:
+    SET Monthly_Revenue =   CONCAT('$', FORMAT((SELECT SUM(S.Income)
+                                                FROM SalesReport S     # SalesReport is a View
+                                                WHERE S.AccountCreated < FromDate), 2));
+    SET Monthly_Revenue = IFNULL(Monthly_Revenue, '$0.00');
+    SELECT Monthly_Revenue;
+END;
+$$
+DELIMITER ;
 
 
 # Add a customer:
