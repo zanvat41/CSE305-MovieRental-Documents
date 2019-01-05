@@ -1,4 +1,4 @@
-MySQL codes and other documents for Trappist-1f. (https://bitbucket.org/ZheLin219/trappist1f/overview)
+MySQL codes and other documents for Trappist-1f. (https://github.com/zanvat41/CSE305-MovieRental)
 
 Group Members:
 Zhe Lin,
